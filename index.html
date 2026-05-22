@@ -1,1508 +1,665 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Financial Tracker Pro</title>
+<title>Finance Tracker Pro</title>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:white;padding-bottom:80px;min-height:100vh}
-  .header{background:linear-gradient(135deg,#2563eb 0%,#9333ea 100%);padding:24px;position:sticky;top:0;z-index:10;box-shadow:0 4px 6px rgba(0,0,0,.3)}
-  .header h1{font-size:24px;margin-bottom:4px}
-  .header p{font-size:14px;color:#dbeafe}
-  .month-selector{background:#1e293b;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:16px;border-radius:12px}
-  .month-selector button{background:#334155;border:none;color:white;padding:8px 16px;border-radius:8px;cursor:pointer}
-  .current-month{font-weight:bold;font-size:16px;flex:1;text-align:center}
-  .container{padding:0 16px}
-  .card{background:#1e293b;border-radius:12px;padding:16px;margin-bottom:16px}
-  .card h2{font-size:18px;margin-bottom:12px}
-  .card h3{font-size:16px;margin-bottom:12px}
-  .stat-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0}
-  .stat-row.border-top{border-top:1px solid #334155;padding-top:12px;margin-top:8px}
-  .btn{padding:12px 16px;border-radius:8px;border:none;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s}
-  .btn-primary{background:#2563eb;color:white}
-  .btn-success{background:#16a34a;color:white}
-  .btn-danger{background:#dc2626;color:white}
-  .btn-secondary{background:#475569;color:white}
-  .btn-orange{background:#ea580c;color:white}
-  .btn-teal{background:#0d9488;color:white}
-  .btn-purple{background:#9333ea;color:white}
-  .btn-yellow{background:#ca8a04;color:white}
-  .input{width:100%;padding:10px 12px;background:#334155;border:1px solid #475569;border-radius:8px;color:white;font-size:14px;outline:none}
-  .input:focus{border-color:#2563eb}
-  .input::placeholder{color:#94a3b8}
-  select{width:100%;padding:10px 12px;background:#334155;border:1px solid #475569;border-radius:8px;color:white;font-size:14px;outline:none}
-  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-  .flex{display:flex}.flex-gap{gap:8px}.flex-1{flex:1}
-  .space-y>*+*{margin-top:12px}
-  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#1e293b;border-top:1px solid #334155;display:flex;overflow-x:auto}
-  .nav-btn{flex:1;min-width:60px;padding:12px 4px;background:none;border:none;color:#94a3b8;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:all .2s}
-  .nav-btn.active{background:#2563eb;color:white}
-  .nav-btn span{font-size:11px}
-  .toast{position:fixed;top:78px;left:50%;transform:translateX(-50%);background:#10b981;color:white;padding:12px 24px;border-radius:8px;font-weight:bold;z-index:1000;opacity:0;transition:opacity .3s;white-space:nowrap}
-  .toast.show{opacity:1}
-  .hidden{display:none!important}
-  .text-green{color:#10b981}.text-red{color:#ef4444}.text-orange{color:#f97316}
-  .text-gray{color:#94a3b8}.text-teal{color:#2dd4bf}.text-yellow{color:#fbbf24}
-  .text-purple{color:#a78bfa}.text-sky{color:#38bdf8}
-  .text-sm{font-size:13px}.text-xs{font-size:11px}.text-xl{font-size:20px}
-  .text-2xl{font-size:24px}.text-3xl{font-size:28px}.font-bold{font-weight:bold}
-  .mb-2{margin-bottom:8px}.mb-3{margin-bottom:12px}.mb-4{margin-bottom:16px}
-  .mt-2{margin-top:8px}.mt-3{margin-top:12px}
-  .paid-card{background:rgba(6,78,59,.3);border:1px solid #10b981}
-  .cleared-card{opacity:.6}
-  .progress-bar{background:#334155;border-radius:9999px;height:8px;overflow:hidden}
-  .progress-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#10b981);transition:width .3s}
-  .alert{background:rgba(127,29,29,.5);border:2px solid #ef4444;border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:12px}
-  .icon-btn{background:none;border:none;color:#60a5fa;cursor:pointer;padding:4px}
-  .pending-item{background:#334155;border-radius:8px;padding:12px;margin-bottom:8px;border-left:4px solid #3b82f6}
-  .pending-item.due-soon{border-left-color:#f59e0b}
-  .pending-item.overdue{border-left-color:#dc2626;background:rgba(127,29,29,.2)}
-  .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:bold}
-  .badge-danger{background:#dc2626}.badge-warning{background:#f59e0b;color:#000}
-  .badge-info{background:#3b82f6}.badge-success{background:#16a34a}
-  .badge-purple{background:#9333ea}.badge-teal{background:#0d9488}
-  .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-  .summary-card{background:#1e293b;border-radius:10px;padding:14px;text-align:center}
-  .summary-card .val{font-size:20px;font-weight:bold}
-  .summary-card .lbl{font-size:10px;color:#94a3b8;margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
-  .lent-item{background:#334155;border-radius:8px;padding:12px;margin-bottom:8px;border-left:4px solid #2dd4bf}
-  .lent-item.collected{background:rgba(6,78,59,.3);border-left-color:#10b981}
-  .divider-label{font-size:11px;color:#64748b;text-align:center;padding:6px 0;letter-spacing:1px;text-transform:uppercase;border-top:1px dashed #334155;margin:8px 0}
-  .notif-box{background:rgba(37,99,235,.15);border:1px solid #2563eb;border-radius:12px;padding:16px;margin-bottom:16px}
-  .notif-step{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #1e293b}
-  .notif-step:last-child{border-bottom:none}
-  .step-num{width:28px;height:28px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:13px;flex-shrink:0}
-  /* Balance change indicator */
-  .balance-tag{display:inline-block;font-size:11px;padding:2px 7px;border-radius:10px;font-weight:bold;margin-left:6px}
-  .balance-tag.deducted{background:rgba(239,68,68,.2);color:#fca5a5}
-  .balance-tag.pending{background:rgba(251,191,36,.15);color:#fbbf24}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#f1f5f9;padding-bottom:90px;min-height:100vh}
+.hdr{background:linear-gradient(135deg,#1d4ed8,#7c3aed);padding:16px 18px;position:sticky;top:0;z-index:50;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+.hdr-left h1{font-size:18px;font-weight:800;letter-spacing:.3px}
+.hdr-left p{font-size:11px;color:#bfdbfe;margin-top:1px}
+.save-hdr-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:white;padding:8px 14px;border-radius:9px;font-size:18px;cursor:pointer}
+.mon-nav{background:#1e293b;margin:12px;border-radius:11px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.mon-nav button{background:#334155;border:none;color:white;width:36px;height:36px;border-radius:8px;font-size:16px;cursor:pointer}
+.mon-name{font-weight:700;font-size:15px}
+.wrap{padding:0 12px}
+.card{background:#1e293b;border-radius:13px;padding:15px;margin-bottom:12px}
+.card-hdr{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.btn{padding:10px 16px;border-radius:9px;border:none;font-size:13px;font-weight:600;cursor:pointer}
+.btn-blue{background:#2563eb;color:white}
+.btn-green{background:#16a34a;color:white}
+.btn-gray{background:#475569;color:white}
+.btn-red{background:#dc2626;color:white}
+.btn-yellow{background:#b45309;color:white}
+.btn-purple{background:#7c3aed;color:white}
+.btn-sm{padding:5px 10px;border-radius:7px;font-size:12px;font-weight:700;border:none;cursor:pointer;white-space:nowrap}
+.inp{width:100%;padding:9px 11px;background:#334155;border:1px solid #475569;border-radius:8px;color:white;font-size:14px;outline:none}
+.inp:focus{border-color:#3b82f6}
+.inp::placeholder{color:#64748b}
+select.inp{cursor:pointer}
+.row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #0f172a}
+.row:last-child{border-bottom:none}
+.lbl{color:#94a3b8;font-size:13px}
+.val{font-weight:700;font-size:14px}
+.g-red{color:#ef4444}.g-green{color:#10b981}.g-yellow{color:#fbbf24}.g-blue{color:#60a5fa}.g-purple{color:#a78bfa}.g-orange{color:#fb923c}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.b-green{background:rgba(16,185,129,.2);color:#10b981;border:1px solid #10b981}
+.b-yellow{background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid #f59e0b}
+.b-red{background:rgba(220,38,38,.2);color:#ef4444;border:1px solid #dc2626}
+.b-blue{background:rgba(37,99,235,.2);color:#60a5fa;border:1px solid #3b82f6}
+.b-gray{background:rgba(71,85,105,.3);color:#94a3b8}
+.pitem{background:#0f172a;border-radius:10px;padding:12px;margin-bottom:8px;border-left:4px solid #334155}
+.pitem.paid{border-left-color:#10b981;background:rgba(6,78,59,.15)}
+.pitem.unpaid{border-left-color:#f59e0b}
+.pitem.overdue{border-left-color:#dc2626;background:rgba(127,29,29,.15)}
+.progress{background:#1e293b;border-radius:99px;height:6px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#10b981);transition:width .3s}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#1e293b;border-top:1px solid #334155;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.nb{flex:1;min-width:56px;padding:9px 4px 11px;background:none;border:none;color:#64748b;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .2s}
+.nb.on{background:#2563eb;color:white}
+.nb .ni{font-size:18px}
+.nb .nl{font-size:9px;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+.toast{position:fixed;top:72px;left:50%;transform:translateX(-50%);background:#10b981;color:white;padding:10px 20px;border-radius:9px;font-weight:700;font-size:13px;z-index:999;opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1}
+.divider{font-size:10px;color:#475569;text-align:center;padding:5px 0 8px;letter-spacing:1.2px;text-transform:uppercase;border-top:1px dashed #334155;margin:5px 0 8px}
 </style>
 </head>
 <body>
 
-<div class="header" style="display:flex;justify-content:space-between;align-items:center">
-  <div>
-    <h1>💰 Financial Tracker Pro</h1>
-    <div id="lastSaved" style="font-size:12px;color:#bfdbfe;margin-top:2px">Loading...</div>
+<div class="hdr">
+  <div class="hdr-left">
+    <h1>💰 Finance Tracker Pro</h1>
+    <p id="savedLbl">Loading…</p>
   </div>
-  <button onclick="manualSave()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:white;padding:10px 14px;border-radius:10px;font-size:20px;cursor:pointer;backdrop-filter:blur(4px)">💾</button>
+  <button class="save-hdr-btn" onclick="manualSave()">💾</button>
 </div>
 
-<div id="monthSelector"></div>
-<div class="container" id="app"></div>
+<div class="mon-nav">
+  <button onclick="chMon(-1)">◀</button>
+  <div class="mon-name" id="monName"></div>
+  <button onclick="chMon(1)">▶</button>
+</div>
+
+<div class="wrap" id="app"></div>
 <div class="toast" id="toast"></div>
-<div class="bottom-nav" id="bottomNav"></div>
+<nav class="bottom-nav" id="nav"></nav>
 
 <script>
-// ─── DEFAULT STATE (pre-loaded with your latest backup) ───────────────────────
-let state = {
-  activeTab:'overview',
-  currentMonth:(function(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');})(),
-  monthlyIncome:14786,
+// ─── STATE ───────────────────────────────────────────────────────────────────
+function todayMon(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');}
+
+let S = {
+  tab:'monthly',
+  month: todayMon(),
+  income: 11600,
   emis:[
-    {id:1,name:'DIB Loan',    monthlyEmi:3326,   tenure:48,paidMonths:25,amountPaid:83150,   balanceMonths:23,balanceAmount:76498,   dueDate:3, paid:false},
-    {id:2,name:'DIB CC1',     monthlyEmi:454.21, tenure:36,paidMonths:9, amountPaid:4087.89, balanceMonths:27,balanceAmount:12263.67,dueDate:3, paid:false},
-    {id:3,name:'DIB CC2',     monthlyEmi:99.43,  tenure:36,paidMonths:9, amountPaid:894.87,  balanceMonths:27,balanceAmount:2684.61, dueDate:3, paid:false},
-    {id:4,name:'ENBD CC',     monthlyEmi:1474.66,tenure:15,paidMonths:15,amountPaid:22119.9, balanceMonths:0, balanceAmount:0,       dueDate:10,paid:true},
-    {id:5,name:'EIB CC',      monthlyEmi:1226.6, tenure:15,paidMonths:2, amountPaid:2453.2,  balanceMonths:13,balanceAmount:15945.8, dueDate:25,paid:false},
-    {id:6,name:'CashNow App', monthlyEmi:746.67, tenure:3, paidMonths:2, amountPaid:1493.34, balanceMonths:1, balanceAmount:746.67,  dueDate:22,paid:false}
+    {id:1,name:'DIB Loan',    emi:3326,   tenure:48,paid:27,paidAmt:89802,  balMon:21,balAmt:69846,   due:3,  start:'2024-03-03',end:'2028-02-03',cleared:false},
+    {id:2,name:'DIB CC1',     emi:454.21, tenure:36,paid:11,paidAmt:4996.31,balMon:25,balAmt:11355.25,due:3,  start:'2025-07-03',end:'2028-06-03',cleared:false},
+    {id:3,name:'DIB CC2',     emi:99.43,  tenure:36,paid:11,paidAmt:1093.73,balMon:25,balAmt:2485.75, due:3,  start:'2025-07-03',end:'2028-06-03',cleared:false},
+    {id:4,name:'ENBD CC',     emi:1474.66,tenure:15,paid:15,paidAmt:22119.9,balMon:0, balAmt:0,       due:10, start:'2024-12-31',end:'2026-02-10',cleared:true},
+    {id:5,name:'EIB CC',      emi:1226.60,tenure:15,paid:4, paidAmt:4906.4, balMon:11,balAmt:13492.60,due:30, start:'2026-01-30',end:'2027-03-30',cleared:false},
+    {id:6,name:'CashNow App', emi:920,    tenure:3, paid:1, paidAmt:920,    balMon:2, balAmt:1840,    due:18, start:'2026-05-18',end:'2026-07-18',cleared:false},
   ],
-  personalDebts:[
-    {id:1, person:'Vibin',    amount:400,  paid:400,  balance:0},
-    {id:2, person:'Hafeel',   amount:4450, paid:2000, balance:2450},
-    {id:3, person:'Jiji',     amount:5000, paid:5000, balance:0},
-    {id:4, person:'Jiji (2)', amount:2000, paid:2000, balance:0},
-    {id:5, person:'Sherilka', amount:5000, paid:0,    balance:5000},
-    {id:6, person:'Sadiq',    amount:1650, paid:0,    balance:1650},
-    {id:7, person:'Najad',    amount:650,  paid:0,    balance:650},
-    {id:8, person:'Akash',    amount:1050, paid:1050, balance:0},
-    {id:9, person:'Divin',    amount:1500, paid:750,  balance:750},
-    {id:10,person:'Hasim',    amount:200,  paid:200,  balance:0},
-    {id:1774193604894,person:'Dineesh',amount:2000,paid:0,balance:2000}
-  ],
-  moneyLent:[
-    {id:1772825939710,person:'Vibin',amount:2000,collected:2000,balance:0,note:'',dueDate:'',date:'2026-03-06T19:38:59.711Z'}
+  debts:[
+    {id:1,person:'Vibin',   total:60,   paidAmt:0,   bal:60},
+    {id:2,person:'Hafeel',  total:4450, paidAmt:2000,bal:2450},
+    {id:3,person:'Sherilka',total:5000, paidAmt:0,   bal:5000},
+    {id:4,person:'Sadiq',   total:1650, paidAmt:0,   bal:1650},
+    {id:5,person:'Divin',   total:1500, paidAmt:750, bal:750},
+    {id:6,person:'Fasil',   total:200,  paidAmt:0,   bal:200},
   ],
   utilities:[
-    {id:1,   name:'DEWA',      icon:'⚡',dueDate:20,type:'dewa'},
-    {id:2,   name:'Chiller/AC',icon:'❄️',dueDate:25,type:'chiller'},
-    {id:3,   name:'Gas',       icon:'🔥',dueDate:15,type:'gas'},
-    {id:4,   name:'Internet',  icon:'📶',dueDate:10,type:'internet'},
-    {id:5,   name:'Mobile',    icon:'📱',dueDate:5, type:'mobile'},
-    {id:9001,name:'Rent',      icon:'🏠',dueDate:15,type:'rent',fixedAmount:1916.66}
+    {id:1,name:'Rent',    icon:'🏠',due:15,fixed:1916.66},
+    {id:2,name:'DEWA',    icon:'⚡',due:20,fixed:0},
+    {id:3,name:'Chiller', icon:'❄️',due:25,fixed:0},
+    {id:4,name:'Gas',     icon:'🔥',due:15,fixed:0},
+    {id:5,name:'WiFi',    icon:'📶',due:10,fixed:100},
+    {id:6,name:'Mobile',  icon:'📱',due:5, fixed:72},
+    {id:7,name:'Home',    icon:'🏡',due:1, fixed:0},
+    {id:8,name:'Zuu',     icon:'💪',due:1, fixed:0},
   ],
-  utilityBills:{
-    '2026-03':{
-      1:   {amount:283.14, paid:false,date:'2026-03-06T19:43:14.903Z',note:'Paid'},
-      2:   {amount:195.79, paid:false,date:'2026-03-06T19:47:06.729Z',note:''},
-      4:   {amount:100,    paid:true, date:'2026-03-06T19:47:33.575Z',note:''},
-      5:   {amount:69,     paid:true, date:'2026-03-06T19:47:49.825Z',note:''},
-      9001:{amount:1916.66,paid:true, date:'2026-03-06T19:48:00.383Z',note:'Monthly rent'}
-    }
-  },
-  fixedExpenses:[
-    {id:8001,name:'Family Support',amount:1000,dueDate:1,icon:'👨‍👩‍👧'}
-  ],
-  fixedExpensePayments:{
-    '2026-03':{
-      8001:{paid:true,date:'2026-03-08T13:26:50.149Z'}
-    }
-  },
-  monthlyExpenses:{
-    '2026-03':[
-      {id:1773027653478,date:'2026-03-09T03:40:53.478Z',category:'Entertainment',amount:150,description:'Karama'}
-    ]
-  },
-  editingIncome:false,showAddDebt:false,showAddLent:false,showAddUtility:false,
-  emiMonthlyPaid:{},
-  lastSaved:'2026-03-08T13:38:04.423Z',
-  notificationsEnabled:false
+  // Per-month data: utilBills[YYYY-MM][utilId] = {amt, paid}
+  utilBills:{},
+  // Per-month EMI paid: emiPaid[YYYY-MM][emiId] = true/false
+  emiPaid:{},
+  // Monthly expenses: expenses[YYYY-MM] = [{id,cat,amt,note,date}]
+  expenses:{},
+  editIncome:false,
+  lastSaved:null
 };
 
-// ─── MIGRATION ────────────────────────────────────────────────────────────────
-function migrateOldData() {
-  if (!state.fixedExpenses) state.fixedExpenses = [];
-  if (!state.fixedExpensePayments) state.fixedExpensePayments = {};
-  if (!state.emiMonthlyPaid) state.emiMonthlyPaid = {};
-  // Migrate Rent from emis → utilities
-  const ri = state.emis.findIndex(e => e.name === 'Rent');
-  if (ri !== -1) {
-    const r = state.emis[ri];
-    if (!state.utilities.find(u => u.name === 'Rent'))
-      state.utilities.push({id:9001,name:'Rent',icon:'🏠',dueDate:r.dueDate||15,type:'rent',fixedAmount:r.monthlyEmi||1916.66});
-    state.emis.splice(ri, 1);
-  }
-  // Migrate Family Support from emis → fixedExpenses
-  const fi = state.emis.findIndex(e => e.name === 'Family Support');
-  if (fi !== -1) {
-    const f = state.emis[fi];
-    if (!state.fixedExpenses.find(x => x.name === 'Family Support'))
-      state.fixedExpenses.push({id:8001,name:'Family Support',amount:f.monthlyEmi||1000,dueDate:f.dueDate||1,icon:'👨‍👩‍👧'});
-    state.emis.splice(fi, 1);
-  }
-  if (!state.utilities.find(u => u.name === 'Rent'))
-    state.utilities.push({id:9001,name:'Rent',icon:'🏠',dueDate:15,type:'rent',fixedAmount:1916.66});
-  if (!state.fixedExpenses.find(x => x.name === 'Family Support'))
-    state.fixedExpenses.push({id:8001,name:'Family Support',amount:1000,dueDate:1,icon:'👨‍👩‍👧'});
+// ─── STORAGE ─────────────────────────────────────────────────────────────────
+function save(){
+  try{
+    S.lastSaved=new Date().toISOString();
+    localStorage.setItem('ftp_v3',JSON.stringify(S));
+    updSaved();return true;
+  }catch(e){return false;}
 }
-
-// ─── PERSISTENCE ──────────────────────────────────────────────────────────────
-function loadData() {
-  try {
-    const saved = localStorage.getItem('financialTrackerPro_v2');
-    if (saved) {
-      const p = JSON.parse(saved);
-      state = Object.assign({}, state, p, {activeTab:'overview',currentMonth:todayMonth(),editingIncome:false,showAddDebt:false,showAddLent:false,showAddUtility:false});
-    } else {
-      state.currentMonth = todayMonth();
+function load(){
+  try{
+    const d=localStorage.getItem('ftp_v3');
+    if(d){
+      const p=JSON.parse(d);
+      S=Object.assign({},S,p,{tab:S.tab,editIncome:false});
+      if(!S.emiPaid)S.emiPaid={};
+      if(!S.utilBills)S.utilBills={};
+      if(!S.expenses)S.expenses={};
     }
-    migrateOldData();
-    saveData();
-  } catch(e) { console.error(e); migrateOldData(); }
+    save();
+  }catch(e){}
+}
+function manualSave(){if(save())toast('💾 Saved!');}
+function updSaved(){
+  const el=document.getElementById('savedLbl');
+  if(!el)return;
+  if(S.lastSaved){const d=new Date(S.lastSaved);el.textContent='Saved '+d.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+}
+function toast(m,e){
+  const el=document.getElementById('toast');
+  el.textContent=m;el.style.background=e?'#dc2626':'#10b981';
+  el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200);
 }
 
-function saveData() {
-  try {
-    state.lastSaved = new Date().toISOString();
-    localStorage.setItem('financialTrackerPro_v2', JSON.stringify(state));
-    updateLastSaved(); return true;
-  } catch(e) { return false; }
-}
-
-function manualSave() { if(saveData()) toast('✅ All data saved!'); }
-
-function toast(msg, type) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.style.background = type==='error'?'#ef4444':'#10b981';
-  el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'), 2500);
-}
-
-function updateLastSaved() {
-  const el = document.getElementById('lastSaved');
-  if (!el) return;
-  if (state.lastSaved) {
-    const d = new Date(state.lastSaved);
-    el.textContent = 'Saved: ' + d.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-  }
-}
-
-// ─── HELPERS ──────────────────────────────────────────────────────────────────
-function todayMonth(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');}
-function mName(m){const[y,mo]=m.split('-');return new Date(y,mo-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});}
-function changeMonth(d){
-  const[y,m]=state.currentMonth.split('-').map(Number);
-  const dt=new Date(y,m-1+d,1);
-  const yr=dt.getFullYear();
-  const mo=String(dt.getMonth()+1).padStart(2,'0');
-  state.currentMonth=yr+'-'+mo;
-  saveData();render();
-}
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function fmt(n){return(+n||0).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});}
+function f2(n){return(+n||0).toFixed(2);}
 function ord(n){return n+(n==1?'st':n==2?'nd':n==3?'rd':'th');}
-function fmt(n){return(n||0).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});}
-function fmtDec(n){return(n||0).toFixed(2);}
-
-// ─── CALCULATIONS ─────────────────────────────────────────────────────────────
-// ✅ KEY RULE:
-//   Utilities/Fixed Expenses deduct from Available ONLY when marked as PAID
-//   Unpaid bills appear in "Pending" but do NOT reduce available balance yet
-function getCalc() {
-  const bills    = state.utilityBills[state.currentMonth] || {};
-  const fpmts    = state.fixedExpensePayments[state.currentMonth] || {};
-  const exps     = state.monthlyExpenses[state.currentMonth] || [];
-
-  // EMIs — always deducted (committed monthly obligation)
-  const totalEmi    = state.emis.filter(e=>!e.paid).reduce((s,e)=>s+e.monthlyEmi, 0);
-  const totalEmiBal = state.emis.reduce((s,e)=>s+e.balanceAmount, 0);
-
-  // Utilities — only PAID bills deduct from balance
-  const paidUtil    = Object.values(bills).reduce((s,b)=>s+(b.paid?(b.amount||0):0), 0);
-  const totalUtil   = Object.values(bills).reduce((s,b)=>s+(b.amount||0), 0); // total entered (for display)
-  const unpaidUtil  = totalUtil - paidUtil;
-
-  // Fixed expenses — only PAID ones deduct
-  const paidFixed   = (state.fixedExpenses||[]).reduce((s,f)=>{
-    const p = fpmts[f.id];
-    return s + (p && p.paid ? f.amount : 0);
-  }, 0);
-  const totalFixed  = (state.fixedExpenses||[]).reduce((s,f)=>s+f.amount, 0);
-
-  // Regular logged expenses — always deducted (includes Family Support etc)
-  const regularExp  = exps.reduce((s,e)=>s+e.amount, 0);
-
-  // Personal debt totals
-  const totalDebtP  = state.personalDebts.reduce((s,d)=>s+d.balance, 0);
-
-  // Money lent
-  const lentOut     = state.moneyLent.reduce((s,l)=>s+l.balance, 0);
-  const lentTotal   = state.moneyLent.reduce((s,l)=>s+l.amount, 0);
-
-  // Available = income minus what's ACTUALLY been paid out
-  const totalDeducted = totalEmi + paidUtil + regularExp;
-  const available     = state.monthlyIncome - totalDeducted;
-
-  return {
-    totalEmi, totalEmiBal, totalDebtP,
-    paidUtil, totalUtil, unpaidUtil,
-    regularExp, lentOut, lentTotal,
-    totalDeducted, available
-  };
+function monLabel(m){const[y,mo]=m.split('-');return new Date(y,mo-1).toLocaleDateString('en-US',{month:'long',year:'numeric'});}
+function chMon(d){
+  const[y,m]=S.month.split('-').map(Number);
+  const dt=new Date(y,m-1+d,1);
+  S.month=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0');
+  save();render();
 }
 
-function getPending() {
-  const today = new Date().getDate();
-  const bills = state.utilityBills[state.currentMonth] || {};
-  const fpmts = state.fixedExpensePayments[state.currentMonth] || {};
-  const list  = [];
+// ─── MONTH DATA HELPERS ───────────────────────────────────────────────────────
+function getEmiPaid(emiId){return !!(S.emiPaid[S.month]&&S.emiPaid[S.month][emiId]);}
+function setEmiPaid(emiId,val){
+  if(!S.emiPaid[S.month])S.emiPaid[S.month]={};
+  S.emiPaid[S.month][emiId]=val;
+}
+function getUtil(uid){return(S.utilBills[S.month]||{})[uid]||{amt:0,paid:false};}
+function setUtil(uid,data){
+  if(!S.utilBills[S.month])S.utilBills[S.month]={};
+  S.utilBills[S.month][uid]=Object.assign(getUtil(uid),data);
+}
+function getExps(){return S.expenses[S.month]||[];}
 
-  state.emis.filter(e=>!e.paid).forEach(e=>{
-    const d = e.dueDate-today;
-    list.push({type:'EMI',name:e.name,amount:e.monthlyEmi,dueDate:e.dueDate,status:d<0?'overdue':d<=3?'due-soon':'upcoming',days:d});
-  });
-
-  state.utilities.forEach(u=>{
-    const b = bills[u.id];
-    if (!b || !b.paid) {
-      const d   = u.dueDate-today;
-      const amt = b ? b.amount : (u.fixedAmount||0);
-      list.push({type:u.type==='rent'?'Rent':'Utility',name:u.name,amount:amt,dueDate:u.dueDate,status:d<0?'overdue':d<=3?'due-soon':'upcoming',days:d});
-    }
-  });
-
-  (state.fixedExpenses||[]).forEach(f=>{
-    const p = fpmts[f.id];
-    if (!p || !p.paid) {
-      const d = f.dueDate-today;
-      list.push({type:'Expense',name:f.name,amount:f.amount,dueDate:f.dueDate,status:d<0?'overdue':d<=3?'due-soon':'upcoming',days:d});
-    }
-  });
-
-  list.sort((a,b)=>a.dueDate-b.dueDate);
-  return list;
+// ─── CALC ─────────────────────────────────────────────────────────────────────
+function calc(){
+  const emiPaidAmt = S.emis.filter(e=>!e.cleared&&getEmiPaid(e.id)).reduce((s,e)=>s+e.emi,0);
+  const utilPaidAmt = S.utilities.reduce((s,u)=>{const b=getUtil(u.id);return s+(b.paid?b.amt:0);},0);
+  const expAmt = getExps().reduce((s,e)=>s+e.amt,0);
+  const totalPaid = emiPaidAmt+utilPaidAmt+expAmt;
+  const balance = S.income - totalPaid;
+  // Pending (not yet paid)
+  const emiPending = S.emis.filter(e=>!e.cleared&&!getEmiPaid(e.id)).reduce((s,e)=>s+e.emi,0);
+  const utilPending = S.utilities.reduce((s,u)=>{const b=getUtil(u.id);return s+(b.amt>0&&!b.paid?b.amt:0);},0);
+  const totalDebt = S.debts.reduce((s,d)=>s+d.bal,0);
+  const totalEmiBal = S.emis.reduce((s,e)=>s+e.balAmt,0);
+  return{emiPaidAmt,utilPaidAmt,expAmt,totalPaid,balance,emiPending,utilPending,totalDebt,totalEmiBal};
 }
 
-// ─── ACTIONS ──────────────────────────────────────────────────────────────────
-function updateIncome(){const v=parseFloat(document.getElementById('income-input').value);if(v>0){state.monthlyIncome=v;state.editingIncome=false;saveData();toast('✅ Income updated!');render();}}
-
-function markEmiPayment(id){
-  state.emis=state.emis.map(e=>{
-    if(e.id!==id||e.balanceMonths<1)return e;
-    const nb=e.balanceMonths-1;
-    return{...e,paidMonths:e.paidMonths+1,amountPaid:e.amountPaid+e.monthlyEmi,balanceMonths:nb,balanceAmount:Math.max(0,e.balanceAmount-e.monthlyEmi),paid:nb===0};
-  });
-  saveData();toast('✅ Payment marked!');render();
-}
-function undoEmiPayment(id){
-  state.emis=state.emis.map(e=>{
-    if(e.id!==id||e.paidMonths<1)return e;
-    return{...e,paidMonths:e.paidMonths-1,amountPaid:e.amountPaid-e.monthlyEmi,balanceMonths:e.balanceMonths+1,balanceAmount:e.balanceAmount+e.monthlyEmi,paid:false};
-  });
-  saveData();toast('↩️ Undone!');render();
-}
-
-function payDebt(id,amt){
-  state.personalDebts=state.personalDebts.map(d=>d.id===id?{...d,paid:d.paid+amt,balance:Math.max(0,d.balance-amt)}:d);
-  saveData();toast('✅ Payment recorded!');render();
-}
-
-function addNewDebt(){
-  const type=document.getElementById('debt-type').value;
-  const amt=parseFloat(document.getElementById('debt-amount').value);
-  if(!(amt>0))return;
-  if(type==='existing'){
-    const person=document.getElementById('debt-person').value;
-    state.personalDebts=state.personalDebts.map(d=>d.person===person?{...d,amount:d.amount+amt,balance:d.balance+amt}:d);
-  }else{
-    const person=document.getElementById('new-person').value.trim();
-    if(!person)return;
-    state.personalDebts.push({id:Date.now(),person,amount:amt,paid:0,balance:amt});
-  }
-  state.showAddDebt=false;
-  saveData();toast('✅ Debt added!');render();
-}
-
-function addMoneyLent(){
-  const person=document.getElementById('lent-person').value.trim();
-  const amt=parseFloat(document.getElementById('lent-amount').value);
-  const note=document.getElementById('lent-note').value.trim();
-  const dueDate=document.getElementById('lent-due').value;
-  if(!person||!(amt>0))return;
-  state.moneyLent.push({id:Date.now(),person,amount:amt,collected:0,balance:amt,note,dueDate,date:new Date().toISOString()});
-  state.showAddLent=false;
-  saveData();toast('✅ Lent entry added!');render();
-}
-
-function collectLent(id,amt){
-  state.moneyLent=state.moneyLent.map(l=>l.id===id?{...l,collected:l.collected+amt,balance:Math.max(0,l.balance-amt)}:l);
-  saveData();toast('✅ Collection recorded!');render();
-}
-
-function deleteLent(id){
-  if(!confirm('Delete this lent entry?'))return;
-  state.moneyLent=state.moneyLent.filter(l=>l.id!==id);
-  saveData();toast('🗑️ Deleted!');render();
-}
-
-function saveUtilityBill(){
-  const uid=parseInt(document.getElementById('util-id').value);
-  const amt=parseFloat(document.getElementById('util-amount').value);
-  const note=document.getElementById('util-note').value;
-  if(!(uid>0)||!(amt>0))return;
-  if(!state.utilityBills[state.currentMonth])state.utilityBills[state.currentMonth]={};
-  const existing=state.utilityBills[state.currentMonth][uid]||{};
-  state.utilityBills[state.currentMonth][uid]={...existing,amount:amt,paid:existing.paid||false,date:new Date().toISOString(),note};
-  saveData();toast('✅ Bill saved!');render();
-}
-
-// ✅ THIS is what changes the Available balance for utilities
-function toggleUtilPaid(uid){
-  if(!state.utilityBills[state.currentMonth])state.utilityBills[state.currentMonth]={};
-  const b=state.utilityBills[state.currentMonth][uid]||{};
-  state.utilityBills[state.currentMonth][uid]={...b,paid:!b.paid};
-  const wasPaid=b.paid;
-  saveData();
-  toast(wasPaid?'↩️ Marked unpaid — AED '+fmt(b.amount||0)+' added back to balance':'✅ Paid! AED '+fmt(b.amount||0)+' deducted from balance');
-  render();
-}
-
-function quickAddRent(uid){
-  const u=state.utilities.find(u=>u.id===uid);
-  if(!u||!u.fixedAmount)return;
-  if(!state.utilityBills[state.currentMonth])state.utilityBills[state.currentMonth]={};
-  state.utilityBills[state.currentMonth][uid]={amount:u.fixedAmount,paid:false,date:new Date().toISOString(),note:'Monthly rent'};
-  saveData();toast('✅ Rent bill entered! Tap "Mark as Paid" to deduct from balance.');render();
-}
-
-function addCustomUtility(){
-  const name=document.getElementById('cu-name').value.trim();
-  const icon=document.getElementById('cu-icon').value.trim()||'🏠';
-  const dueDate=parseInt(document.getElementById('cu-due').value);
-  if(!name||!(dueDate>0))return;
-  state.utilities.push({id:Date.now(),name,icon,dueDate,type:'custom'});
-  state.showAddUtility=false;
-  saveData();toast('✅ Utility added!');render();
-}
-
-// ✅ THIS is what changes the Available balance for fixed expenses
-function toggleFixedExpPaid(id){
-  if(!state.fixedExpensePayments[state.currentMonth])state.fixedExpensePayments[state.currentMonth]={};
-  const p=state.fixedExpensePayments[state.currentMonth][id]||{};
-  const exp=state.fixedExpenses.find(f=>f.id===id);
-  state.fixedExpensePayments[state.currentMonth][id]={paid:!p.paid,date:new Date().toISOString()};
-  const wasPaid=p.paid;
-  saveData();
-  toast(wasPaid?'↩️ Marked unpaid':'✅ Paid! AED '+fmt(exp?exp.amount:0)+' deducted from balance');
-  render();
-}
-
-function addExpense(){
-  const cat=document.getElementById('exp-cat').value;
-  const amt=parseFloat(document.getElementById('exp-amt').value);
-  const desc=document.getElementById('exp-desc').value;
-  if(!(amt>0))return;
-  if(!state.monthlyExpenses[state.currentMonth])state.monthlyExpenses[state.currentMonth]=[];
-  state.monthlyExpenses[state.currentMonth].push({id:Date.now(),date:new Date().toISOString(),category:cat,amount:amt,description:desc});
-  saveData();toast('✅ Expense added!');render();
-}
-
-function deleteExpense(id){
-  if(!state.monthlyExpenses[state.currentMonth])return;
-  state.monthlyExpenses[state.currentMonth]=state.monthlyExpenses[state.currentMonth].filter(e=>e.id!==id);
-  saveData();toast('🗑️ Deleted!');render();
-}
-
-function exportData(){
-  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='fin-backup-'+new Date().toISOString().slice(0,10)+'.json';
-  a.click();
-  toast('📥 Exported!');
-}
-
-function importData(e){
-  const file=e.target.files[0];
-  if(!file)return;
-  const r=new FileReader();
-  r.onload=ev=>{
-    try{
-      const p=JSON.parse(ev.target.result);
-      state=Object.assign({},state,p,{activeTab:'overview',currentMonth:todayMonth(),editingIncome:false,showAddDebt:false,showAddLent:false,showAddUtility:false});
-      migrateOldData();
-      saveData();toast('📤 Imported!');render();
-    }catch{toast('❌ Invalid file!','error');}
-  };
-  r.readAsText(file);
-}
-
-// ─── MONTH SELECTOR ───────────────────────────────────────────────────────────
-function renderMonthSel(){
-  return '<div class="month-selector"><button onclick="changeMonth(-1)">◀</button><div class="current-month">'+mName(state.currentMonth)+'</div><button onclick="changeMonth(1)">▶</button></div>';
-}
-
-// ─── OVERVIEW ─────────────────────────────────────────────────────────────────
-function renderOverview(){
-  const c=getCalc();
-  return (c.available<0?'<div class="alert"><div style="font-size:24px">⚠️</div><div><h3>Action Required</h3><p class="text-sm text-red" style="margin-top:4px">Obligations exceed income by AED '+fmt(Math.abs(c.available))+'.</p></div></div>':'')+
-
-  '<div class="card">'+
-    '<h2>💵 Monthly Overview</h2>'+
-    '<div class="stat-row"><span class="text-gray">Monthly Income</span>'+
-      '<div style="display:flex;align-items:center;gap:8px">'+
-        '<span class="font-bold text-green text-xl">AED '+fmt(state.monthlyIncome)+'</span>'+
-        '<button class="icon-btn" onclick="state.editingIncome=true;render()">✏️</button>'+
-      '</div>'+
-    '</div>'+
-    (state.editingIncome?
-      '<div style="background:#334155;border-radius:8px;padding:12px;margin-top:8px">'+
-        '<input type="number" id="income-input" class="input mb-2" value="'+state.monthlyIncome+'">'+
-        '<div class="flex flex-gap"><button class="btn btn-success flex-1" onclick="updateIncome()">Save</button><button class="btn btn-secondary flex-1" onclick="state.editingIncome=false;render()">Cancel</button></div>'+
-      '</div>':'')+
-
-    '<div class="stat-row"><span class="text-gray">EMI Obligations</span><span class="font-bold text-red">— AED '+fmt(c.totalEmi)+'</span></div>'+
-    '<div class="stat-row"><span class="text-gray">Utilities Paid</span><span class="font-bold text-yellow">— AED '+fmt(c.paidUtil)+'</span></div>'+
-    (c.unpaidUtil>0?'<div class="stat-row"><span class="text-gray">Utilities Pending</span><span class="font-bold text-gray">AED '+fmt(c.unpaidUtil)+'</span></div>':'')+
-    '<div class="stat-row"><span class="text-gray">Expenses</span><span class="font-bold text-orange">— AED '+fmt(c.regularExp)+'</span></div>'+
-    '<div class="stat-row border-top">'+
-      '<span class="font-bold" style="font-size:16px">Available Balance</span>'+
-      '<span class="font-bold text-2xl '+(c.available>=0?'text-green':'text-red')+'">AED '+fmt(c.available)+'</span>'+
-    '</div>'+
-  '</div>'+
-
-  '<div class="card">'+
-    '<h2>📉 Total Debt</h2>'+
-    '<div class="stat-row"><span class="text-gray">EMI Balance Remaining</span><span class="font-bold">AED '+fmt(c.totalEmiBal)+'</span></div>'+
-    '<div class="stat-row"><span class="text-gray">Personal Debts</span><span class="font-bold">AED '+fmt(c.totalDebtP)+'</span></div>'+
-    '<div class="stat-row border-top"><span class="font-bold text-xl">Total</span><span class="font-bold text-2xl text-orange">AED '+fmt(c.totalEmiBal+c.totalDebtP)+'</span></div>'+
-  '</div>'+
-
-  (c.lentOut>0?
-    '<div class="card" style="border:1px solid #2dd4bf">'+
-      '<h2>🤝 Money to Collect</h2>'+
-      '<div class="stat-row"><span class="text-gray">Outstanding</span><span class="font-bold text-xl text-teal">AED '+fmt(c.lentOut)+'</span></div>'+
-    '</div>':'')+
-
-  '<div class="card mb-4"><h3 class="mb-3">💾 Backup & Restore</h3>'+
-    '<div class="flex flex-gap">'+
-      '<button class="btn btn-primary flex-1" onclick="exportData()">📥 Export</button>'+
-      '<label class="btn btn-secondary flex-1" style="text-align:center;cursor:pointer">📤 Import<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>'+
-    '</div>'+
-  '</div>'+
-
-  '<div class="grid-2">'+
-    '<button class="btn btn-primary" onclick="state.activeTab=\'monthly\';render()" style="padding:16px;text-align:left"><div style="font-size:22px">📆</div><div class="text-sm">Monthly View</div></button>'+
-    '<button class="btn btn-primary" onclick="state.activeTab=\'planner\';render()" style="padding:16px;text-align:left"><div style="font-size:22px">📋</div><div class="text-sm">Full Planner</div></button>'+
-    '<button class="btn btn-primary" onclick="state.activeTab=\'emis\';render()" style="padding:16px;text-align:left"><div class="text-2xl font-bold">'+state.emis.filter(e=>!e.paid).length+'</div><div class="text-sm">Active EMIs</div></button>'+
-    '<button class="btn btn-purple" onclick="state.activeTab=\'personal\';render()" style="padding:16px;text-align:left"><div class="text-2xl font-bold">'+state.personalDebts.filter(d=>d.balance>0).length+'</div><div class="text-sm">Personal Debts</div></button>'+
-    '<button class="btn btn-teal" onclick="state.activeTab=\'lent\';render()" style="padding:16px;text-align:left"><div class="text-2xl font-bold">'+state.moneyLent.filter(l=>l.balance>0).length+'</div><div class="text-sm">Money Lent</div></button>'+
-    '<button class="btn btn-yellow" onclick="state.activeTab=\'utilities\';render()" style="padding:16px;text-align:left"><div class="text-2xl font-bold">'+state.utilities.length+'</div><div class="text-sm">Utilities + Rent</div></button>'+
-    '<button class="btn btn-success" onclick="state.activeTab=\'expenses\';render()" style="padding:16px;text-align:left"><div class="text-2xl font-bold">'+(state.monthlyExpenses[state.currentMonth]||[]).length+'</div><div class="text-sm">Expenses</div></button>'+
-    '<button class="btn btn-orange" onclick="state.activeTab=\'pending\';render()" style="padding:16px;text-align:left"><div style="font-size:22px">⏰</div><div class="text-sm">Pending</div></button>'+
-  '</div>';
-}
-
-// ─── PENDING ──────────────────────────────────────────────────────────────────
-function renderPending(){
-  const pending=getPending();const c=getCalc();
-  const items=pending.map(item=>
-    '<div class="pending-item '+item.status+'">'+
-      '<div class="flex" style="justify-content:space-between;align-items:start;margin-bottom:8px">'+
-        '<div><div class="font-bold">'+item.name+' <span class="text-gray text-xs">['+item.type+']</span></div>'+
-        '<div class="text-sm text-gray">Due: '+ord(item.dueDate)+' of month</div></div>'+
-        '<div>'+(item.status==='overdue'?'<span class="badge badge-danger">OVERDUE</span>':item.status==='due-soon'?'<span class="badge badge-warning">DUE SOON</span>':'<span class="badge badge-info">UPCOMING</span>')+'</div>'+
-      '</div>'+
-      '<div class="flex" style="justify-content:space-between">'+
-        '<div class="text-sm"><span class="text-gray">Amount:</span> <span class="font-bold text-orange">AED '+(item.amount>0?fmt(item.amount):'TBD')+'</span></div>'+
-        (item.status==='overdue'?'<div class="text-sm text-red">⚠️ '+Math.abs(item.days)+'d overdue</div>':item.status==='due-soon'?'<div class="text-sm text-yellow">⏰ '+item.days+'d left</div>':'')+
-      '</div>'+
-    '</div>'
-  ).join('');
-
-  return '<h2 class="text-xl font-bold mb-4">⏰ Pending Payments</h2>'+
-    '<div class="card mb-4" style="text-align:center;background:linear-gradient(135deg,#dc2626,#ea580c);padding:20px">'+
-      '<div class="text-3xl font-bold">AED '+fmt(c.totalEmi + c.totalUtil + c.totalFixed)+'</div>'+
-      '<div class="text-sm mt-2">Total Monthly Obligations (EMI + All Utilities + Fixed)</div>'+
-    '</div>'+
-    '<div class="card mb-4"><h3 class="mb-3">📅 Unpaid This Month</h3>'+
-      (pending.length===0?'<p class="text-gray text-sm">All payments marked paid! 🎉</p>':items)+
-    '</div>'+
-    '<div class="card"><h3 class="mb-3">💰 Money to Collect</h3>'+
-      '<div class="stat-row"><span class="text-gray">Outstanding</span><span class="font-bold text-teal text-xl">AED '+fmt(c.lentOut)+'</span></div>'+
-      '<button class="btn btn-teal" style="width:100%;margin-top:12px" onclick="state.activeTab=\'lent\';render()">View Lent Details</button>'+
-    '</div>';
-}
-
-// ─── EMIs ─────────────────────────────────────────────────────────────────────
-function renderEmis(){
-  const sorted=[...state.emis].sort((a,b)=>(!a.paid&&b.paid)?-1:(a.paid&&!b.paid)?1:0);
-  let html='<h2 class="text-xl font-bold mb-4">📅 EMI Obligations</h2>';
-  sorted.forEach((emi,idx)=>{
-    if(emi.paid&&idx>0&&!sorted[idx-1].paid)html+='<div class="divider-label">✅ Cleared EMIs</div>';
-    const pct=emi.tenure>0?(emi.paidMonths/emi.tenure)*100:100;
-    html+=
-      '<div class="card '+(emi.paid?'paid-card cleared-card':'')+'">'+
-        '<div class="flex" style="justify-content:space-between;margin-bottom:12px">'+
-          '<div><h3 class="font-bold" style="font-size:16px;margin-bottom:2px">'+emi.name+(emi.paid?' <span style="font-size:12px;color:#10b981">(Cleared)</span>':'')+'</h3>'+
-          '<p class="text-sm text-gray">Due: '+ord(emi.dueDate)+' of each month</p></div>'+
-          (emi.paid?'<span style="font-size:24px">✅</span>':'')+
-        '</div>'+
-        '<div class="space-y text-sm mb-3">'+
-          '<div class="flex" style="justify-content:space-between;padding:3px 0"><span class="text-gray">Monthly EMI</span><span class="font-bold">AED '+fmt(emi.monthlyEmi)+'</span></div>'+
-          '<div class="flex" style="justify-content:space-between;padding:3px 0"><span class="text-gray">Balance</span><span class="font-bold '+(emi.paid?'text-green':'text-orange')+'">AED '+fmt(emi.balanceAmount)+'</span></div>'+
-          '<div class="flex" style="justify-content:space-between;padding:3px 0"><span class="text-gray">Months Left</span><span class="font-bold">'+emi.balanceMonths+'</span></div>'+
-          '<div class="flex" style="justify-content:space-between;padding:3px 0"><span class="text-gray">Progress</span><span class="font-bold">'+emi.paidMonths+' / '+emi.tenure+'</span></div>'+
-        '</div>'+
-        '<div class="progress-bar mb-3"><div class="progress-fill" style="width:'+pct+'%"></div></div>'+
-        (!emi.paid?
-          '<div class="flex flex-gap">'+
-            '<button class="btn btn-primary flex-1" onclick="markEmiPayment('+emi.id+')">Mark Payment Made</button>'+
-            (emi.paidMonths>0?'<button class="btn btn-orange" onclick="undoEmiPayment('+emi.id+')">↩️</button>':'')+
-          '</div>':'')+
-      '</div>';
-  });
-  return html;
-}
-
-// ─── PERSONAL DEBTS ───────────────────────────────────────────────────────────
-function renderPersonalDebts(){
-  const c=getCalc();
-  const sorted=[...state.personalDebts].sort((a,b)=>(a.balance>0&&b.balance===0)?-1:(a.balance===0&&b.balance>0)?1:0);
-  const addForm=state.showAddDebt?
-    '<div class="card mb-4"><h3 class="font-bold mb-3">Add Borrowed Amount</h3><div class="space-y">'+
-      '<select id="debt-type" class="input" onchange="var p=document.getElementById(\'debt-person\'),n=document.getElementById(\'new-person\');this.value===\'new\'?(p.classList.add(\'hidden\'),n.classList.remove(\'hidden\')):(p.classList.remove(\'hidden\'),n.classList.add(\'hidden\'))">'+
-        '<option value="existing">Existing Person</option><option value="new">New Person</option>'+
-      '</select>'+
-      '<select id="debt-person" class="input">'+[...new Set(state.personalDebts.map(d=>d.person))].map(p=>'<option>'+p+'</option>').join('')+'</select>'+
-      '<input type="text" id="new-person" class="input hidden" placeholder="New person name">'+
-      '<input type="number" id="debt-amount" class="input" placeholder="Amount (AED)">'+
-      '<div class="flex flex-gap"><button class="btn btn-purple flex-1" onclick="addNewDebt()">Add</button><button class="btn btn-secondary flex-1" onclick="state.showAddDebt=false;render()">Cancel</button></div>'+
-    '</div></div>':'';
-
-  let cards='';
-  sorted.forEach((debt,idx)=>{
-    if(debt.balance===0&&idx>0&&sorted[idx-1].balance>0)cards+='<div class="divider-label">✅ Cleared Debts</div>';
-    const pct=debt.amount>0?(debt.paid/debt.amount)*100:100;
-    cards+=
-      '<div class="card '+(debt.balance===0?'paid-card cleared-card':'')+'">'+
-        '<div class="flex" style="justify-content:space-between;margin-bottom:12px">'+
-          '<div><h3 class="font-bold" style="font-size:16px;margin-bottom:2px">'+debt.person+(debt.balance===0?' <span style="font-size:12px;color:#10b981">(Cleared)</span>':'')+'</h3>'+
-          '<p class="text-sm text-gray">Original: AED '+fmt(debt.amount)+'</p></div>'+
-          (debt.balance===0?'<span style="font-size:24px">✅</span>':'')+
-        '</div>'+
-        '<div class="space-y text-sm mb-3">'+
-          '<div class="flex" style="justify-content:space-between;padding:3px 0"><span class="text-gray">Paid</span><span class="font-bold text-green">AED '+fmt(debt.paid)+'</span></div>'+
-          '<div class="flex" style="justify-content:space-between;padding:3px 0"><span class="text-gray">Balance</span><span class="font-bold '+(debt.balance===0?'text-green':'text-orange')+'">AED '+fmt(debt.balance)+'</span></div>'+
-        '</div>'+
-        '<div class="progress-bar mb-3"><div class="progress-fill" style="width:'+pct+'%;background:linear-gradient(90deg,#f97316,#10b981)"></div></div>'+
-        (debt.balance>0?
-          '<div class="flex flex-gap">'+
-            '<input type="number" id="dp-'+debt.id+'" class="input flex-1" placeholder="Amount">'+
-            '<button class="btn btn-success" onclick="var a=parseFloat(document.getElementById(\'dp-'+debt.id+'\').value);if(a>0)payDebt('+debt.id+',a)">Pay</button>'+
-          '</div>':'')+
-      '</div>';
-  });
-
-  return '<div class="section-header"><h2 class="text-xl font-bold">📉 Personal Debts</h2>'+
-    '<button class="btn btn-purple" style="padding:8px 12px" onclick="state.showAddDebt=true;render()">➕ Add</button></div>'+
-    addForm+
-    '<div class="card mb-4" style="text-align:center"><div class="text-3xl font-bold text-orange">AED '+fmt(c.totalDebtP)+'</div><div class="text-sm text-gray mt-2">Total Balance Remaining</div></div>'+
-    cards;
-}
-
-// ─── MONEY LENT ───────────────────────────────────────────────────────────────
-function renderMoneyLent(){
-  const total=state.moneyLent.reduce((s,l)=>s+l.amount,0);
-  const collected=state.moneyLent.reduce((s,l)=>s+l.collected,0);
-  const out=state.moneyLent.reduce((s,l)=>s+l.balance,0);
-  const addForm=state.showAddLent?
-    '<div class="card mb-4" style="border:1px solid #2dd4bf"><h3 class="font-bold mb-3">💸 Record Money Lent</h3><div class="space-y">'+
-      '<input type="text" id="lent-person" class="input" placeholder="Person\'s name">'+
-      '<input type="number" id="lent-amount" class="input" placeholder="Amount lent (AED)">'+
-      '<input type="text" id="lent-note" class="input" placeholder="Note / reason (optional)">'+
-      '<input type="date" id="lent-due" class="input">'+
-      '<div class="flex flex-gap"><button class="btn btn-teal flex-1" onclick="addMoneyLent()">Save</button><button class="btn btn-secondary flex-1" onclick="state.showAddLent=false;render()">Cancel</button></div>'+
-    '</div></div>':'';
-
-  const cards=state.moneyLent.map(l=>{
-    const pct=l.amount>0?(l.collected/l.amount)*100:0;
-    const ov=l.dueDate&&new Date(l.dueDate)<new Date()&&l.balance>0;
-    return '<div class="lent-item '+(l.balance===0?'collected':'')+'">'+
-      '<div class="flex" style="justify-content:space-between;align-items:start;margin-bottom:8px">'+
-        '<div>'+
-          '<div class="font-bold" style="font-size:16px">'+l.person+'</div>'+
-          (l.note?'<div class="text-sm text-gray">'+l.note+'</div>':'')+
-          (l.dueDate?'<div class="text-sm '+(ov?'text-red':'text-gray')+'">'+(ov?'⚠️ Overdue':'📅 Due')+': '+new Date(l.dueDate).toLocaleDateString()+'</div>':'')+
-        '</div>'+
-        '<div style="display:flex;gap:8px;align-items:center">'+
-          (l.balance===0?'<span style="font-size:20px">✅</span>':ov?'<span class="badge badge-danger">OVERDUE</span>':'')+
-          '<button onclick="deleteLent('+l.id+')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:16px">🗑️</button>'+
-        '</div>'+
-      '</div>'+
-      '<div class="space-y text-sm mb-3">'+
-        '<div class="flex" style="justify-content:space-between;padding:3px 0"><span class="text-gray">Lent on</span><span>'+new Date(l.date).toLocaleDateString()+'</span></div>'+
-        '<div class="flex" style="justify-content:space-between;padding:3px 0"><span class="text-gray">Original</span><span class="font-bold">AED '+fmt(l.amount)+'</span></div>'+
-        '<div class="flex" style="justify-content:space-between;padding:3px 0"><span class="text-gray">Collected</span><span class="font-bold text-green">AED '+fmt(l.collected)+'</span></div>'+
-        '<div class="flex" style="justify-content:space-between;padding:3px 0"><span class="text-gray">Balance</span><span class="font-bold text-teal">AED '+fmt(l.balance)+'</span></div>'+
-      '</div>'+
-      '<div class="progress-bar mb-3"><div class="progress-fill" style="width:'+pct+'%;background:linear-gradient(90deg,#2dd4bf,#10b981)"></div></div>'+
-      (l.balance>0?
-        '<div class="flex flex-gap">'+
-          '<input type="number" id="lp-'+l.id+'" class="input flex-1" placeholder="Collection amount">'+
-          '<button class="btn btn-teal" onclick="var a=parseFloat(document.getElementById(\'lp-'+l.id+'\').value);if(a>0)collectLent('+l.id+',a)">Collect</button>'+
-        '</div>':'')+
-    '</div>';
-  }).join('');
-
-  return '<div class="section-header"><h2 class="text-xl font-bold">🤝 Money I Lent</h2>'+
-    '<button class="btn btn-teal" style="padding:8px 12px" onclick="state.showAddLent=true;render()">➕ Add</button></div>'+
-    addForm+
-    '<div class="grid-3 mb-4">'+
-      '<div class="summary-card"><div class="val text-orange">AED '+fmt(total)+'</div><div class="lbl">Total Lent</div></div>'+
-      '<div class="summary-card"><div class="val text-green">AED '+fmt(collected)+'</div><div class="lbl">Collected</div></div>'+
-      '<div class="summary-card"><div class="val text-teal">AED '+fmt(out)+'</div><div class="lbl">Outstanding</div></div>'+
-    '</div>'+
-    (state.moneyLent.length===0?'<div class="card" style="text-align:center;padding:32px"><p class="text-gray">No lent entries yet.<br>Tap ➕ to add one.</p></div>':cards);
-}
-
-// ─── UTILITIES ────────────────────────────────────────────────────────────────
-function renderUtilities(){
-  const bills=state.utilityBills[state.currentMonth]||{};
-  const totalBilled=Object.values(bills).reduce((s,b)=>s+(b.amount||0),0);
-  const totalPaid=Object.values(bills).reduce((s,b)=>s+(b.paid?b.amount||0:0),0);
+// ─── MONTHLY TAB ─────────────────────────────────────────────────────────────
+function renderMonthly(){
+  const c=calc();
   const today=new Date().getDate();
+  let html='';
 
-  const addForm=state.showAddUtility?
-    '<div class="card mb-4"><h3 class="font-bold mb-3">Add Custom Utility</h3><div class="space-y">'+
-      '<input type="text" id="cu-name" class="input" placeholder="Utility name">'+
-      '<input type="text" id="cu-icon" class="input" placeholder="Emoji icon (e.g. 🚗)">'+
-      '<input type="number" id="cu-due" class="input" placeholder="Due date (day of month)">'+
-      '<div class="flex flex-gap"><button class="btn btn-yellow flex-1" onclick="addCustomUtility()">Add</button><button class="btn btn-secondary flex-1" onclick="state.showAddUtility=false;render()">Cancel</button></div>'+
-    '</div></div>':'';
+  // ── Income Card ──
+  html+=
+    '<div class="card" style="background:linear-gradient(135deg,#1e3a5f,#312e81);margin-bottom:12px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<div>'+
+          '<div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px">Monthly Income</div>'+
+          '<div style="font-size:32px;font-weight:800;color:#6ee7b7">AED '+fmt(S.income)+'</div>'+
+        '</div>'+
+        '<button onclick="S.editIncome=!S.editIncome;render()" style="background:rgba(255,255,255,.12);border:none;color:white;padding:8px 12px;border-radius:9px;font-size:16px;cursor:pointer">✏️</button>'+
+      '</div>'+
+      (S.editIncome?
+        '<div style="display:flex;gap:8px;margin-top:12px">'+
+          '<input type="number" id="incInp" value="'+S.income+'" class="inp" style="flex:1">'+
+          '<button onclick="S.income=parseFloat(document.getElementById(\'incInp\').value)||S.income;S.editIncome=false;save();render()" class="btn btn-green" style="padding:9px 14px">Save</button>'+
+          '<button onclick="S.editIncome=false;render()" class="btn btn-gray" style="padding:9px 12px">✕</button>'+
+        '</div>':'') +
+    '</div>';
 
-  // Info banner removed
+  // ── Balance Status ──
+  html+=
+    '<div style="background:'+(c.balance>=0?'rgba(16,185,129,.12)':'rgba(220,38,38,.12)')+';border:2px solid '+(c.balance>=0?'#10b981':'#ef4444')+';border-radius:13px;padding:14px;margin-bottom:12px">'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+        '<div style="text-align:center">'+
+          '<div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Paid Out</div>'+
+          '<div style="font-size:22px;font-weight:800;color:#ef4444">AED '+fmt(c.totalPaid)+'</div>'+
+        '</div>'+
+        '<div style="text-align:center">'+
+          '<div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">'+(c.balance>=0?'In Hand':'Overspent')+'</div>'+
+          '<div style="font-size:22px;font-weight:800;color:'+(c.balance>=0?'#10b981':'#ef4444')+'">AED '+fmt(Math.abs(c.balance))+'</div>'+
+        '</div>'+
+      '</div>'+
+      ((c.emiPending+c.utilPending)>0?
+        '<div style="margin-top:10px;padding-top:10px;border-top:1px solid #334155">'+
+          '<div style="display:flex;justify-content:space-between">'+
+            '<span style="font-size:12px;color:#f59e0b">⏳ Still to pay</span>'+
+            '<span style="font-size:13px;font-weight:700;color:#f59e0b">AED '+fmt(c.emiPending+c.utilPending)+'</span>'+
+          '</div>'+
+          '<div style="display:flex;justify-content:space-between;margin-top:3px">'+
+            '<span style="font-size:11px;color:#64748b">After all paid</span>'+
+            '<span style="font-size:12px;font-weight:700;color:'+(c.balance-(c.emiPending+c.utilPending)>=0?'#10b981':'#ef4444')+'">AED '+fmt(c.balance-(c.emiPending+c.utilPending))+'</span>'+
+          '</div>'+
+        '</div>':'') +
+    '</div>';
 
-  const cards=state.utilities.map(u=>{
-    const b=bills[u.id];
-    const diff=u.dueDate-today;
-    const isPaid=b&&b.paid;
-    const isRent=u.type==='rent';
-    const over=diff<0&&!isPaid;
-    const soon=diff>=0&&diff<=3&&!isPaid;
-    const badge=isPaid?'<span class="badge badge-success">PAID ✅</span>':over?'<span class="badge badge-danger">OVERDUE</span>':soon?'<span class="badge badge-warning">DUE SOON</span>':'<span class="badge badge-info">UPCOMING</span>';
-    return '<div class="card '+(isPaid?'paid-card':'')+'">'+
-      '<div class="flex" style="justify-content:space-between;align-items:center;margin-bottom:12px">'+
-        '<div class="flex" style="align-items:center;gap:10px">'+
-          '<div style="font-size:30px">'+u.icon+'</div>'+
-          '<div>'+
-            '<div class="font-bold" style="font-size:16px">'+u.name+(isRent?' <span class="badge badge-purple" style="font-size:9px">RENT</span>':'')+'</div>'+
-            '<div class="text-sm text-gray">Due: '+ord(u.dueDate)+' of month</div>'+
-            (isRent&&u.fixedAmount?'<div class="text-sm text-yellow">Fixed: AED '+fmt(u.fixedAmount)+'/mo</div>':'')+
+  // ── Waterfall ──
+  html+='<div style="background:#1e293b;border-radius:13px;overflow:hidden;margin-bottom:12px">';
+  html+='<div style="padding:11px 14px;background:linear-gradient(90deg,#1d4ed8,#7c3aed);display:flex;justify-content:space-between"><span style="font-weight:700;font-size:14px">💸 Payment Waterfall</span><span style="font-size:11px;color:rgba(255,255,255,.5)">tap to mark paid</span></div>';
+  html+='<div style="background:rgba(16,185,129,.08);padding:11px 14px;border-bottom:1px solid #0f172a;display:flex;justify-content:space-between"><span style="font-weight:700;color:#6ee7b7;font-size:13px">🟢 Income</span><span style="font-size:17px;font-weight:800;color:#6ee7b7">AED '+fmt(S.income)+'</span></div>';
+
+  let runBal=S.income;
+
+  // EMIs
+  S.emis.filter(e=>!e.cleared).forEach(e=>{
+    const paid=getEmiPaid(e.id);
+    if(paid)runBal-=e.emi;
+    const balC=runBal>=0?'#10b981':'#ef4444';
+    const diff=e.due-today;
+    const badge=paid?'<span class="badge b-green">✅ PAID</span>':(diff<0?'<span class="badge b-red">OVERDUE</span>':diff<=3?'<span class="badge b-yellow">DUE SOON</span>':'<span class="badge b-blue">DUE '+ord(e.due)+'</span>');
+    html+=
+      '<div style="padding:12px 14px;border-bottom:1px solid #0f172a;background:'+(paid?'rgba(16,185,129,.05)':'')+'">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">'+
+          '<div style="font-size:19px">📅</div>'+
+          '<div style="flex:1"><div style="font-size:13px;font-weight:700">'+e.name+'</div><div style="font-size:11px;color:#64748b">EMI • AED '+fmt(e.emi)+'/mo • '+e.balMon+' mo left</div></div>'+
+          '<div style="text-align:right"><div style="font-size:14px;font-weight:800;color:'+(paid?'#10b981':'#f59e0b')+'">'+(paid?'— ':'')+' AED '+fmt(e.emi)+'</div>'+badge+'</div>'+
+        '</div>'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;padding-top:7px;border-top:1px solid #0f172a">'+
+          (paid?
+            '<button onclick="toggleEmi('+e.id+')" class="btn-sm" style="background:rgba(6,78,59,.5);border:1px solid #10b981;color:#10b981">✅ Paid — Undo ↩️</button>':
+            '<button onclick="toggleEmi('+e.id+')" class="btn-sm btn-blue">Mark Paid ✓</button>')+
+          '<div style="text-align:right"><div style="font-size:10px;color:#64748b">Balance after</div><div style="font-size:14px;font-weight:800;color:'+balC+'">AED '+fmt(runBal)+'</div></div>'+
+        '</div>'+
+      '</div>';
+  });
+
+  // Utilities
+  html+='<div style="padding:6px 14px;background:#0f172a;font-size:10px;font-weight:700;color:#64748b;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid #1e293b">🏠 Utilities & Bills</div>';
+  S.utilities.forEach(u=>{
+    const b=getUtil(u.id);
+    const isPaid=b.paid&&b.amt>0;
+    const hasAmt=b.amt>0;
+    if(isPaid)runBal-=b.amt;
+    const balC=runBal>=0?'#10b981':'#ef4444';
+    const diff=u.due-today;
+    const badge=isPaid?'<span class="badge b-green">✅ PAID</span>':(diff<0&&hasAmt?'<span class="badge b-red">OVERDUE</span>':diff<=3&&hasAmt?'<span class="badge b-yellow">DUE SOON</span>':'<span class="badge b-gray">DUE '+ord(u.due)+'</span>');
+    html+=
+      '<div style="padding:11px 14px;border-bottom:1px solid #0f172a;background:'+(isPaid?'rgba(16,185,129,.04)':'')+'">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">'+
+          '<div style="font-size:19px">'+u.icon+'</div>'+
+          '<div style="flex:1"><div style="font-size:13px;font-weight:700">'+u.name+'</div><div style="font-size:11px;color:#64748b">Due '+ord(u.due)+(u.fixed>0?' • Fixed AED '+fmt(u.fixed):'')+'</div></div>'+
+          '<div style="text-align:right">'+
+            (hasAmt?'<div style="font-size:14px;font-weight:800;color:'+(isPaid?'#10b981':'#f59e0b')+'">'+(isPaid?'— ':'')+' AED '+fmt(b.amt)+'</div>':
+              '<input type="number" placeholder="Enter AED" onblur="setUtil('+u.id+',{amt:parseFloat(this.value)||0});save();render()" style="width:90px;padding:4px 7px;background:#334155;border:1px solid #475569;border-radius:7px;color:white;font-size:12px;text-align:right"'+(u.fixed>0?' value="'+u.fixed+'"':'')+'>')+
+            badge+
           '</div>'+
         '</div>'+
-        badge+
-      '</div>'+
-      (isRent&&!b?
-        '<p class="text-sm text-gray mb-2">No bill entered yet for '+mName(state.currentMonth)+'.</p>'+
-        '<button class="btn btn-primary" style="width:100%" onclick="quickAddRent('+u.id+')">⚡ Quick Add AED '+fmt(u.fixedAmount)+'</button>':'')+''+
-      (b?
-        '<div class="space-y text-sm mb-3">'+
-          '<div class="flex" style="justify-content:space-between;padding:3px 0"><span class="text-gray">Bill Amount</span><span class="font-bold text-yellow">AED '+fmt(b.amount)+'</span></div>'+
-          (b.note?'<div class="flex" style="justify-content:space-between;padding:3px 0"><span class="text-gray">Note</span><span>'+b.note+'</span></div>':'')+
+        '<div style="display:flex;justify-content:space-between;align-items:center;padding-top:7px;border-top:1px solid #0f172a">'+
+          (isPaid?
+            '<button onclick="setUtil('+u.id+',{paid:false});save();render()" class="btn-sm" style="background:rgba(6,78,59,.5);border:1px solid #10b981;color:#10b981">✅ Paid — Undo ↩️</button>':
+            (hasAmt?
+              '<button onclick="setUtil('+u.id+',{paid:true});save();render()" class="btn-sm btn-yellow">Mark Paid ✓</button>':
+              '<span style="font-size:11px;color:#64748b">Enter amount above first</span>'
+            ))+
+          '<div style="text-align:right"><div style="font-size:10px;color:#64748b">Balance after</div><div style="font-size:14px;font-weight:800;color:'+balC+'">AED '+fmt(runBal)+'</div></div>'+
         '</div>'+
-        '<button class="btn '+(isPaid?'btn-secondary':'btn-success')+'" style="width:100%;font-size:15px;padding:13px" onclick="toggleUtilPaid('+u.id+')">'+
-          (isPaid?'↩️ Mark as Unpaid':'✅ Mark as Paid')+
-        '</button>':'')+
-      (!b&&!isRent?'<p class="text-sm text-gray">No bill entered for '+mName(state.currentMonth)+' yet.</p>':'')+
-    '</div>';
-  }).join('');
-
-  return '<div class="section-header"><h2 class="text-xl font-bold">🏠 Utilities & Rent</h2>'+
-    '<button class="btn btn-yellow" style="padding:8px 12px" onclick="state.showAddUtility=true;render()">➕ Add</button></div>'+
-    addForm+
-    '<div class="grid-3 mb-4">'+
-      '<div class="summary-card"><div class="val text-yellow">AED '+fmt(totalBilled)+'</div><div class="lbl">Bills Entered</div></div>'+
-      '<div class="summary-card"><div class="val text-green">AED '+fmt(totalPaid)+'</div><div class="lbl">Paid ✅</div></div>'+
-      '<div class="summary-card"><div class="val text-orange">AED '+fmt(totalBilled-totalPaid)+'</div><div class="lbl">Pending</div></div>'+
-    '</div>'+
-    '<div class="card mb-4"><h3 class="font-bold mb-3">📝 Enter Bill Amount</h3>'+
-      '<div class="space-y">'+
-        '<select id="util-id" class="input">'+state.utilities.map(u=>'<option value="'+u.id+'">'+u.icon+' '+u.name+(u.fixedAmount?' (AED '+fmt(u.fixedAmount)+')':'')+' — due '+ord(u.dueDate)+'</option>').join('')+'</select>'+
-        '<input type="number" id="util-amount" class="input" placeholder="Bill amount (AED)">'+
-        '<input type="text" id="util-note" class="input" placeholder="Note (optional)">'+
-        '<button class="btn btn-yellow" style="width:100%" onclick="saveUtilityBill()">Save Bill Amount</button>'+
-      '</div>'+
-    '</div>'+
-    cards;
-}
-
-// ─── EXPENSES ─────────────────────────────────────────────────────────────────
-function renderExpenses(){
-  const exps=state.monthlyExpenses[state.currentMonth]||[];
-  const total=exps.reduce((s,e)=>s+e.amount,0);
-
-  const expCards=exps.slice().reverse().map(exp=>
-    '<div class="card">'+
-      '<div class="flex" style="justify-content:space-between;align-items:center">'+
-        '<div class="flex-1">'+
-          '<div class="font-bold">'+exp.category+'</div>'+
-          '<div class="text-sm text-gray">'+(exp.description||'No description')+' • '+new Date(exp.date).toLocaleDateString()+'</div>'+
-        '</div>'+
-        '<div class="flex" style="align-items:center;gap:12px">'+
-          '<div class="font-bold text-orange">AED '+fmt(exp.amount)+'</div>'+
-          '<button onclick="deleteExpense('+exp.id+')" style="background:none;border:none;color:#ef4444;cursor:pointer">🗑️</button>'+
-        '</div>'+
-      '</div>'+
-    '</div>'
-  ).join('');
-
-  return '<h2 class="text-xl font-bold mb-4">📊 Expenses — '+mName(state.currentMonth)+'</h2>'+
-    '<div class="card mb-4">'+
-      '<h3 class="font-bold mb-3">➕ Add Expense</h3>'+
-      '<div class="space-y">'+
-        '<select id="exp-cat" class="input">'+
-          '<option>Family Support</option>'+
-          '<option>Food & Groceries</option>'+
-          '<option>Transportation</option>'+
-          '<option>Entertainment</option>'+
-          '<option>Healthcare</option>'+
-          '<option>Clothing</option>'+
-          '<option>Personal Care</option>'+
-          '<option>Other</option>'+
-        '</select>'+
-        '<input type="number" id="exp-amt" class="input" placeholder="Amount (AED)">'+
-        '<input type="text" id="exp-desc" class="input" placeholder="Description (optional)">'+
-        '<button class="btn btn-success" style="width:100%" onclick="addExpense();document.getElementById(\'exp-amt\').value=\'\';document.getElementById(\'exp-desc\').value=\'\'">Add Expense</button>'+
-      '</div>'+
-    '</div>'+
-    '<div class="card mb-4" style="background:linear-gradient(135deg,#9333ea,#ec4899);text-align:center;padding:20px">'+
-      '<div class="text-3xl font-bold">AED '+fmt(total)+'</div>'+
-      '<div class="text-sm mt-2">Total Expenses This Month</div>'+
-    '</div>'+
-    (exps.length===0?'<div class="card" style="text-align:center;padding:28px"><p class="text-gray">No expenses logged yet.</p></div>':expCards);
-}
-
-// ─── MONTHLY LEDGER ───────────────────────────────────────────────────────────
-function updateLedgerIncome(){
-  const v=parseFloat(document.getElementById('ledger-income').value);
-  if(v>0){state.monthlyIncome=v;saveData();toast('✅ Income updated!');render();}
-}
-function ledgerToggleUtil(uid){
-  if(!state.utilityBills[state.currentMonth])state.utilityBills[state.currentMonth]={};
-  const b=state.utilityBills[state.currentMonth][uid]||{};
-  const u=state.utilities.find(u=>u.id===uid);
-  if(!b.amount&&u&&u.fixedAmount){
-    state.utilityBills[state.currentMonth][uid]={amount:u.fixedAmount,paid:true,date:new Date().toISOString(),note:''};
-  } else {
-    state.utilityBills[state.currentMonth][uid]={...b,paid:!b.paid};
-  }
-  saveData();render();
-}
-function ledgerSaveUtilAmt(uid){
-  const v=parseFloat(document.getElementById('lu-'+uid).value);
-  if(!(v>0))return;
-  if(!state.utilityBills[state.currentMonth])state.utilityBills[state.currentMonth]={};
-  const b=state.utilityBills[state.currentMonth][uid]||{};
-  state.utilityBills[state.currentMonth][uid]={...b,amount:v,date:new Date().toISOString()};
-  saveData();toast('✅ Amount saved!');render();
-}
-function ledgerSaveEmiAmt(id){
-  const v=parseFloat(document.getElementById('le-'+id).value);
-  if(!(v>0))return;
-  state.emis=state.emis.map(e=>e.id===id?{...e,monthlyEmi:v}:e);
-  saveData();toast('✅ EMI updated!');render();
-}
-function ledgerAddExp(){
-  const cat=document.getElementById('lx-cat').value;
-  const amt=parseFloat(document.getElementById('lx-amt').value);
-  const desc=document.getElementById('lx-desc').value.trim();
-  if(!(amt>0))return;
-  if(!state.monthlyExpenses[state.currentMonth])state.monthlyExpenses[state.currentMonth]=[];
-  state.monthlyExpenses[state.currentMonth].push({id:Date.now(),date:new Date().toISOString(),category:cat,amount:amt,description:desc});
-  document.getElementById('lx-amt').value='';
-  document.getElementById('lx-desc').value='';
-  saveData();toast('✅ Expense added!');render();
-}
-function ledgerDelExp(id){
-  if(!state.monthlyExpenses[state.currentMonth])return;
-  state.monthlyExpenses[state.currentMonth]=state.monthlyExpenses[state.currentMonth].filter(e=>e.id!==id);
-  saveData();render();
-}
-
-function renderLedger(){
-  const bills=state.utilityBills[state.currentMonth]||{};
-  const exps=state.monthlyExpenses[state.currentMonth]||[];
-
-  const activeEmis=state.emis.filter(e=>!e.paid);
-  const totalEmi=activeEmis.reduce((s,e)=>s+e.monthlyEmi,0);
-  const paidUtil=Object.values(bills).reduce((s,b)=>s+(b.paid?b.amount||0:0),0);
-  const totalUtil=Object.values(bills).reduce((s,b)=>s+(b.amount||0),0);
-  const totalExp=exps.reduce((s,e)=>s+e.amount,0);
-  const totalDebt=state.personalDebts.reduce((s,d)=>s+d.balance,0);
-  const totalEmiBal=state.emis.reduce((s,e)=>s+e.balanceAmount,0);
-
-  let running=state.monthlyIncome;
-  const afterEmi=running-totalEmi; running=afterEmi;
-  const afterUtil=running-paidUtil; running=afterUtil;
-  const afterExp=running-totalExp;
-
-  // row helper
-  const row=(label,amt,right,style)=>
-    '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;'+(style||'')+'">' +
-      '<span style="font-size:13px;color:#94a3b8;flex:1">'+label+'</span>'+
-      '<span style="font-size:14px;font-weight:700;margin-left:8px;text-align:right">'+amt+'</span>'+
-      (right?'<span style="font-size:12px;color:#64748b;margin-left:12px;min-width:70px;text-align:right">'+right+'</span>':'')+
-    '</div>';
-
-  // ── Income row
-  let html='<h2 class="text-xl font-bold mb-3">📋 Monthly Ledger — '+mName(state.currentMonth)+'</h2>';
-
-  // Salary editable banner
-  html+='<div style="background:linear-gradient(135deg,#2563eb,#9333ea);border-radius:14px;padding:18px;margin-bottom:14px">'+
-    '<div style="font-size:11px;color:rgba(255,255,255,.65);letter-spacing:1px;margin-bottom:8px">MONTHLY SALARY</div>'+
-    '<div style="display:flex;align-items:center;gap:10px">'+
-      '<input type="number" id="ledger-income" value="'+state.monthlyIncome+'" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:8px;color:white;padding:8px 12px;font-size:22px;font-weight:800;width:160px;outline:none">'+
-      '<button onclick="updateLedgerIncome()" style="background:rgba(255,255,255,.25);border:none;color:white;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Update</button>'+
-      '<div style="margin-left:auto;text-align:right"><div style="font-size:11px;color:rgba(255,255,255,.6)">BALANCE</div>'+
-        '<div style="font-size:22px;font-weight:800;color:'+(afterExp>=0?'#86efac':'#fca5a5')+'">AED '+fmt(afterExp)+'</div>'+
-      '</div>'+
-    '</div>'+
-  '</div>';
-
-  // ── EMI Section
-  html+='<div class="card" style="margin-bottom:10px;padding:0;overflow:hidden">'+
-    '<div style="background:#1e3a5f;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">'+
-      '<span style="font-weight:700;font-size:14px">📅 EMI Obligations</span>'+
-      '<span style="font-size:12px;color:#ef4444;font-weight:700">−AED '+fmt(totalEmi)+' / mo</span>'+
-    '</div>';
-
-  activeEmis.forEach((e,i)=>{
-    const bg=i%2===0?'':'background:rgba(255,255,255,.02);';
-    html+=
-      '<div style="display:flex;align-items:center;padding:10px 12px;border-top:1px solid #334155;'+bg+'gap:8px">'+
-        '<div style="flex:1;min-width:0">'+
-          '<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.name+'</div>'+
-          '<div style="font-size:11px;color:#64748b">'+e.balanceMonths+' mo left • AED '+fmt(e.balanceAmount)+' total</div>'+
-        '</div>'+
-        '<input type="number" id="le-'+e.id+'" value="'+e.monthlyEmi+'" style="background:#334155;border:1px solid #475569;border-radius:6px;color:white;padding:5px 8px;font-size:13px;width:90px;outline:none" onchange="ledgerSaveEmiAmt('+e.id+')">'+
       '</div>';
   });
 
-  if(state.emis.find(e=>e.paid)){
-    html+='<div style="padding:6px 12px;border-top:1px solid #334155;font-size:11px;color:#10b981">✅ '+state.emis.filter(e=>e.paid).length+' EMI(s) fully cleared</div>';
-  }
-
-  html+='<div style="background:#0f172a;padding:9px 14px;display:flex;justify-content:space-between;border-top:1px solid #334155">'+
-    '<span style="font-size:12px;color:#94a3b8">After EMIs</span>'+
-    '<span style="font-weight:700;font-size:14px;color:'+(afterEmi>=0?'#10b981':'#ef4444')+'">AED '+fmt(afterEmi)+'</span>'+
-  '</div></div>';
-
-  // ── Utilities Section
-  html+='<div class="card" style="margin-bottom:10px;padding:0;overflow:hidden">'+
-    '<div style="background:#1e3a2f;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">'+
-      '<span style="font-weight:700;font-size:14px">🏠 Utilities & Rent</span>'+
-      '<span style="font-size:12px;color:#fbbf24;font-weight:700">−AED '+fmt(paidUtil)+' paid / '+fmt(totalUtil-paidUtil)+' pending</span>'+
-    '</div>';
-
-  state.utilities.forEach((u,i)=>{
-    const b=bills[u.id];
-    const isPaid=b&&b.paid;
-    const amt=b?b.amount:(u.fixedAmount||0);
-    const bg=i%2===0?'':'background:rgba(255,255,255,.02);';
-    html+=
-      '<div style="display:flex;align-items:center;padding:10px 12px;border-top:1px solid #334155;'+bg+'gap:8px">'+
-        '<div style="flex:1;min-width:0">'+
-          '<div style="font-size:13px;font-weight:600">'+u.icon+' '+u.name+'</div>'+
-          '<div style="font-size:11px;color:#64748b">Due '+ord(u.dueDate)+(u.fixedAmount?' • Fixed: AED '+fmt(u.fixedAmount):'')+'</div>'+
-        '</div>'+
-        '<input type="number" id="lu-'+u.id+'" value="'+(amt||'')+'" placeholder="Amount" style="background:#334155;border:1px solid #475569;border-radius:6px;color:white;padding:5px 8px;font-size:13px;width:90px;outline:none" onchange="ledgerSaveUtilAmt('+u.id+')">'+
-        '<button onclick="ledgerToggleUtil('+u.id+')" style="background:'+(isPaid?'#16a34a':'#334155')+';border:none;color:white;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:13px;white-space:nowrap">'+(isPaid?'✅ Paid':'Mark Paid')+'</button>'+
-      '</div>';
-  });
-
-  html+='<div style="background:#0f172a;padding:9px 14px;display:flex;justify-content:space-between;border-top:1px solid #334155">'+
-    '<span style="font-size:12px;color:#94a3b8">After Paid Utilities</span>'+
-    '<span style="font-weight:700;font-size:14px;color:'+(afterUtil>=0?'#10b981':'#ef4444')+'">AED '+fmt(afterUtil)+'</span>'+
-  '</div></div>';
-
-  // ── Expenses Section
-  html+='<div class="card" style="margin-bottom:10px;padding:0;overflow:hidden">'+
-    '<div style="background:#2d1b69;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">'+
-      '<span style="font-weight:700;font-size:14px">📊 Expenses</span>'+
-      '<span style="font-size:12px;color:#a78bfa;font-weight:700">−AED '+fmt(totalExp)+'</span>'+
-    '</div>';
-
+  // Expenses
+  const exps=getExps();
+  html+='<div style="padding:6px 14px;background:#0f172a;font-size:10px;font-weight:700;color:#64748b;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid #1e293b">📊 Other Expenses</div>';
   if(exps.length===0){
-    html+='<div style="padding:12px 14px;font-size:13px;color:#64748b;border-top:1px solid #334155">No expenses logged yet.</div>';
+    html+='<div style="padding:14px;color:#64748b;font-size:13px">No expenses yet — add below</div>';
   } else {
-    exps.forEach((ex,i)=>{
-      const bg=i%2===0?'':'background:rgba(255,255,255,.02);';
+    exps.slice().reverse().forEach(ex=>{
+      runBal-=ex.amt;
+      const balC=runBal>=0?'#10b981':'#ef4444';
       html+=
-        '<div style="display:flex;align-items:center;padding:9px 12px;border-top:1px solid #334155;'+bg+'gap:8px">'+
-          '<div style="flex:1;min-width:0">'+
-            '<div style="font-size:13px;font-weight:600">'+ex.category+'</div>'+
-            '<div style="font-size:11px;color:#64748b">'+(ex.description||'')+'</div>'+
+        '<div style="padding:11px 14px;border-bottom:1px solid #0f172a;background:rgba(168,85,247,.04)">'+
+          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">'+
+            '<div style="font-size:19px">📊</div>'+
+            '<div style="flex:1"><div style="font-size:13px;font-weight:700">'+ex.cat+'</div><div style="font-size:11px;color:#64748b">'+(ex.note||'Expense')+' • '+new Date(ex.date).toLocaleDateString('en-GB',{day:'numeric',month:'short'})+'</div></div>'+
+            '<div style="text-align:right"><div style="font-size:14px;font-weight:800;color:#a78bfa">— AED '+fmt(ex.amt)+'</div><span class="badge b-gray">SPENT</span></div>'+
           '</div>'+
-          '<span style="font-size:14px;font-weight:700;color:#f97316">AED '+fmt(ex.amount)+'</span>'+
-          '<button onclick="ledgerDelExp('+ex.id+')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:16px;padding:0 4px">🗑️</button>'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;padding-top:7px;border-top:1px solid #0f172a">'+
+            '<button onclick="delExp('+ex.id+')" class="btn-sm" style="background:#450a0a;border:none;color:#fca5a5">🗑️ Delete</button>'+
+            '<div style="text-align:right"><div style="font-size:10px;color:#64748b">Balance after</div><div style="font-size:14px;font-weight:800;color:'+balC+'">AED '+fmt(runBal)+'</div></div>'+
+          '</div>'+
         '</div>';
     });
   }
 
-  // Add expense inline
+  // Final balance
+  html+='<div style="padding:14px;background:'+(c.balance>=0?'rgba(16,185,129,.12)':'rgba(220,38,38,.12)')+';display:flex;justify-content:space-between;align-items:center;border-top:2px solid '+(c.balance>=0?'#10b981':'#ef4444')+'">'+
+    '<div><div style="font-size:14px;font-weight:700;color:'+(c.balance>=0?'#10b981':'#ef4444')+'">'+(c.balance>=0?'✅ Balance in Hand':'⚠️ Overspent')+'</div><div style="font-size:11px;color:#64748b">Based on payments marked</div></div>'+
+    '<div style="font-size:24px;font-weight:800;color:'+(c.balance>=0?'#10b981':'#ef4444')+'">AED '+fmt(c.balance)+'</div>'+
+  '</div>';
+  html+='</div>';
+
+  // ── Add Expense ──
+  const cats=['Family Support','Food & Groceries','Transportation','Entertainment','Healthcare','Clothing','Personal Care','Other'];
   html+=
-    '<div style="padding:10px 12px;border-top:1px solid #334155;background:rgba(255,255,255,.02)">'+
-      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
-        '<select id="lx-cat" style="background:#334155;border:1px solid #475569;border-radius:6px;color:white;padding:6px 8px;font-size:12px;flex:1;min-width:120px">'+
-          '<option>Family Support</option><option>Food & Groceries</option><option>Transportation</option>'+
-          '<option>Entertainment</option><option>Healthcare</option><option>Clothing</option><option>Personal Care</option><option>Other</option>'+
-        '</select>'+
-        '<input type="number" id="lx-amt" class="input" placeholder="AED" style="width:80px;padding:6px 8px;font-size:12px">'+
-        '<input type="text" id="lx-desc" class="input" placeholder="Description" style="flex:1;min-width:100px;padding:6px 8px;font-size:12px">'+
-        '<button onclick="ledgerAddExp()" style="background:#9333ea;border:none;color:white;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600">Add</button>'+
+    '<div class="card">'+
+      '<div class="card-hdr">➕ Add Expense</div>'+
+      '<div style="display:flex;flex-direction:column;gap:8px">'+
+        '<select id="e-cat" class="inp">'+cats.map(c=>'<option>'+c+'</option>').join('')+'</select>'+
+        '<div style="display:flex;gap:8px">'+
+          '<input type="number" id="e-amt" class="inp" placeholder="Amount (AED)" style="flex:1">'+
+          '<input type="text" id="e-note" class="inp" placeholder="Note" style="flex:1">'+
+        '</div>'+
+        '<button class="btn btn-purple" style="width:100%" onclick="addExp()">Add Expense</button>'+
       '</div>'+
     '</div>';
-
-  html+='<div style="background:#0f172a;padding:9px 14px;display:flex;justify-content:space-between;border-top:1px solid #334155">'+
-    '<span style="font-size:12px;color:#94a3b8">After Expenses</span>'+
-    '<span style="font-weight:700;font-size:14px;color:'+(afterExp>=0?'#10b981':'#ef4444')+'">AED '+fmt(afterExp)+'</span>'+
-  '</div></div>';
-
-  // ── Final Balance Banner
-  html+='<div style="border-radius:14px;padding:18px;margin-bottom:14px;text-align:center;background:'+(afterExp>=0?'linear-gradient(135deg,#065f46,#064e3b)':'linear-gradient(135deg,#7f1d1d,#991b1b)')+';border:2px solid '+(afterExp>=0?'#10b981':'#ef4444')+'">'+
-    '<div style="font-size:11px;color:rgba(255,255,255,.6);letter-spacing:1px;margin-bottom:4px">AVAILABLE BALANCE</div>'+
-    '<div style="font-size:34px;font-weight:800;color:'+(afterExp>=0?'#86efac':'#fca5a5')+'">AED '+fmt(afterExp)+'</div>'+
-    '<div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">'+mName(state.currentMonth)+'</div>'+
-  '</div>';
-
-  // ── Total Debt Summary
-  html+='<div class="card" style="padding:0;overflow:hidden">'+
-    '<div style="background:#1e293b;padding:10px 14px;font-weight:700;font-size:14px">💳 Total Debt Outstanding</div>'+
-    row('EMI Balance Remaining','AED '+fmt(state.emis.reduce((s,e)=>s+e.balanceAmount,0)),'','border-top:1px solid #334155')+
-    row('Personal Debts','AED '+fmt(totalDebt),'','border-top:1px solid #334155')+
-    '<div style="background:#0f172a;padding:9px 14px;display:flex;justify-content:space-between;border-top:1px solid #334155">'+
-      '<span style="font-size:13px;font-weight:700">Total Debt</span>'+
-      '<span style="font-weight:800;font-size:18px;color:#f97316">AED '+fmt(state.emis.reduce((s,e)=>s+e.balanceAmount,0)+totalDebt)+'</span>'+
-    '</div>'+
-  '</div>';
 
   return html;
 }
 
-// ─── MONTHLY PLANNER ──────────────────────────────────────────────────────────
-function plannerToggleUtil(uid){
-  if(!state.utilityBills[state.currentMonth])state.utilityBills[state.currentMonth]={};
-  const b=state.utilityBills[state.currentMonth][uid]||{};
-  if(!b.amount){toast('Enter bill amount in Utilities tab first','error');return;}
-  state.utilityBills[state.currentMonth][uid]={...b,paid:!b.paid};
-  saveData();render();
-}
-function plannerToggleEmi(id){markEmiPayment(id);}
-function plannerUndoEmi(id){undoEmiPayment(id);}
-function plannerSetUtilAmt(uid,amt){
-  if(!(amt>0))return;
-  if(!state.utilityBills[state.currentMonth])state.utilityBills[state.currentMonth]={};
-  const b=state.utilityBills[state.currentMonth][uid]||{};
-  state.utilityBills[state.currentMonth][uid]={...b,amount:amt};
-  saveData();render();
-}
-function plannerDeleteExp(id){deleteExpense(id);}
-
-function renderPlanner(){
-  const bills  = state.utilityBills[state.currentMonth]||{};
-  const exps   = state.monthlyExpenses[state.currentMonth]||[];
-
-  // Running balance calculation — same logic as getCalc
-  const totalEmi  = state.emis.filter(e=>!e.paid).reduce((s,e)=>s+e.monthlyEmi,0);
-  const paidUtil  = Object.values(bills).reduce((s,b)=>s+(b.paid?b.amount||0:0),0);
-  const totalExp  = exps.reduce((s,e)=>s+e.amount,0);
-  const available = state.monthlyIncome - totalEmi - paidUtil - totalExp;
-
-  // Row builder
-  const row=(cols,style='',cls='')=>
-    '<div class="pr-row '+cls+'" style="display:grid;grid-template-columns:'+cols.map(c=>c.w).join(' ')+';align-items:center;padding:9px 12px;border-bottom:1px solid #1e293b;'+style+'">'+
-      cols.map(c=>'<div style="font-size:13px;'+( c.style||'')+'" >'+c.v+'</div>').join('')+
-    '</div>';
-
-  const hdr=(labels,widths)=>
-    '<div style="display:grid;grid-template-columns:'+widths.join(' ')+';padding:6px 12px;background:#0f172a;border-bottom:1px solid #334155;">'+
-      labels.map(l=>'<div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px">'+l+'</div>').join('')+
-    '</div>';
-
-  // ── EMI SECTION ──
-  let emiRows='';
-  const activeEmis=state.emis.filter(e=>!e.paid);
-  activeEmis.forEach(e=>{
-    const paidThisMonth = false; // EMIs don't have per-month paid tracking in current model
-    emiRows+=row([
-      {w:'1fr',  v:'<span style="font-weight:600">'+e.name+'</span><br><span style="font-size:10px;color:#64748b">Due '+ord(e.dueDate)+' • '+e.balanceMonths+' mo left</span>'},
-      {w:'90px', v:'<span style="color:#fbbf24;font-weight:700">AED '+fmt(e.monthlyEmi)+'</span>',style:'text-align:right'},
-      {w:'100px',v:'<span style="color:#94a3b8;font-size:12px">AED '+fmt(e.balanceAmount)+'</span>',style:'text-align:right'},
-      {w:'70px', v:'<button onclick="markEmiPayment('+e.id+')" style="background:#16a34a;border:none;color:white;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;width:100%">Pay ✓</button>',style:'text-align:center'},
-    ]);
-  });
-  // Cleared EMIs
-  const clearedEmis=state.emis.filter(e=>e.paid);
-  if(clearedEmis.length){
-    emiRows+='<div style="font-size:10px;color:#10b981;padding:5px 12px;background:rgba(6,78,59,.2);letter-spacing:.5px">✅ CLEARED</div>';
-    clearedEmis.forEach(e=>{
-      emiRows+=row([
-        {w:'1fr',  v:'<span style="color:#94a3b8">'+e.name+'</span>'},
-        {w:'90px', v:'<span style="color:#475569;font-size:12px">AED '+fmt(e.monthlyEmi)+'</span>',style:'text-align:right'},
-        {w:'100px',v:'<span style="color:#10b981;font-size:12px">Cleared ✅</span>',style:'text-align:right'},
-        {w:'70px', v:'<button onclick="undoEmiPayment('+e.id+')" style="background:#475569;border:none;color:white;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;width:100%">↩️</button>',style:'text-align:center'},
-      ],'opacity:.55');
-    });
-  }
-
-  // ── UTILITY SECTION ──
-  let utilRows='';
-  state.utilities.forEach(u=>{
-    const b=bills[u.id]||{};
-    const isPaid=b.paid||false;
-    const amt=b.amount||0;
-    utilRows+=row([
-      {w:'1fr',  v:'<span style="font-weight:600">'+u.icon+' '+u.name+'</span><br><span style="font-size:10px;color:#64748b">Due '+ord(u.dueDate)+'</span>'},
-      {w:'90px', v: amt>0
-        ? '<span style="color:'+( isPaid?'#10b981':'#fbbf24')+';font-weight:700">AED '+fmt(amt)+'</span>'
-        : '<input type="number" placeholder="Enter" onblur="plannerSetUtilAmt('+u.id+',parseFloat(this.value))" style="width:80px;background:#334155;border:1px solid #475569;border-radius:5px;color:white;padding:3px 5px;font-size:12px">',
-        style:'text-align:right'},
-      {w:'100px',v: u.type==='rent'
-        ? '<span style="color:#94a3b8;font-size:12px">Fixed/mo</span>'
-        : '<span style="color:#64748b;font-size:11px">—</span>',
-        style:'text-align:right'},
-      {w:'70px', v: isPaid
-        ? '<button onclick="toggleUtilPaid('+u.id+')" style="background:#475569;border:none;color:white;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;width:100%">↩️</button>'
-        : (amt>0
-          ? '<button onclick="toggleUtilPaid('+u.id+')" style="background:#16a34a;border:none;color:white;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;width:100%">Pay ✓</button>'
-          : '<span style="font-size:10px;color:#475569">Enter amt</span>'),
-        style:'text-align:center'},
-    ], isPaid?'background:rgba(6,78,59,.15)':'');
-  });
-
-  // ── EXPENSE SECTION ──
-  let expRows='';
-  if(exps.length===0){
-    expRows='<div style="padding:12px;color:#64748b;font-size:13px">No expenses logged for '+mName(state.currentMonth)+'</div>';
+function toggleEmi(id){
+  const was=getEmiPaid(id);
+  setEmiPaid(id,!was);
+  const e=S.emis.find(x=>x.id===id);
+  if(!was){
+    // Marking paid — advance loan
+    if(e&&e.balMon>0){e.paid++;e.paidAmt+=e.emi;e.balMon--;e.balAmt=Math.max(0,e.balAmt-e.emi);}
+    if(e&&e.balMon===0)e.cleared=true;
+    toast('✅ '+e.name+' paid — AED '+fmt(e.emi)+' deducted');
   } else {
-    exps.slice().reverse().forEach(exp=>{
-      expRows+=row([
-        {w:'1fr',  v:'<span style="font-weight:600">'+exp.category+'</span><br><span style="font-size:10px;color:#64748b">'+(exp.description||'')+'</span>'},
-        {w:'90px', v:'<span style="color:#f97316;font-weight:700">AED '+fmt(exp.amount)+'</span>',style:'text-align:right'},
-        {w:'100px',v:'<span style="color:#64748b;font-size:11px">'+new Date(exp.date).toLocaleDateString('en-GB',{day:'numeric',month:'short'})+'</span>',style:'text-align:right'},
-        {w:'70px', v:'<button onclick="plannerDeleteExp('+exp.id+')" style="background:#7f1d1d;border:none;color:#fca5a5;padding:4px 8px;border-radius:6px;font-size:11px;cursor:pointer;width:100%">🗑️</button>',style:'text-align:center'},
-      ]);
-    });
+    // Undo
+    if(e&&e.paid>0){e.paid--;e.paidAmt-=e.emi;e.balMon++;e.balAmt+=e.emi;e.cleared=false;}
+    toast('↩️ Undone — AED '+fmt(e.emi)+' added back');
   }
+  save();render();
+}
 
-  // ── QUICK ADD EXPENSE ──
-  const cats=['Family Support','Food & Groceries','Transportation','Entertainment','Healthcare','Clothing','Personal Care','Other'];
-  const addExpForm=
-    '<div style="padding:10px 12px;border-bottom:1px solid #1e293b;background:#0f172a">'+
-      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
-        '<select id="pl-exp-cat" style="flex:1;min-width:120px;padding:7px 8px;background:#334155;border:1px solid #475569;border-radius:7px;color:white;font-size:13px">'+cats.map(c=>'<option>'+c+'</option>').join('')+'</select>'+
-        '<input type="number" id="pl-exp-amt" class="input" placeholder="AED" style="width:90px;flex:none;padding:7px 8px;font-size:13px">'+
-        '<input type="text" id="pl-exp-desc" class="input" placeholder="Note" style="flex:1;min-width:80px;padding:7px 8px;font-size:13px">'+
-        '<button onclick="(function(){var cat=document.getElementById(\'pl-exp-cat\').value;var amt=parseFloat(document.getElementById(\'pl-exp-amt\').value);var desc=document.getElementById(\'pl-exp-desc\').value;if(!(amt>0))return;if(!state.monthlyExpenses[state.currentMonth])state.monthlyExpenses[state.currentMonth]=[];state.monthlyExpenses[state.currentMonth].push({id:Date.now(),date:new Date().toISOString(),category:cat,amount:amt,description:desc});saveData();toast(\'✅ Added!\');render();})()" style="background:#16a34a;border:none;color:white;padding:7px 12px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">+ Add</button>'+
-      '</div>'+
-    '</div>';
+function addExp(){
+  const cat=document.getElementById('e-cat').value;
+  const amt=parseFloat(document.getElementById('e-amt').value);
+  const note=document.getElementById('e-note').value.trim();
+  if(!(amt>0)){toast('Enter an amount','err');return;}
+  if(!S.expenses[S.month])S.expenses[S.month]=[];
+  S.expenses[S.month].push({id:Date.now(),cat,amt,note,date:new Date().toISOString()});
+  save();toast('✅ Expense added');render();
+}
 
-  const totalUtilBilled=Object.values(bills).reduce((s,b)=>s+(b.amount||0),0);
-  const totalUtilPaid=paidUtil;
+function delExp(id){
+  if(!S.expenses[S.month])return;
+  S.expenses[S.month]=S.expenses[S.month].filter(e=>e.id!==id);
+  save();toast('🗑️ Deleted');render();
+}
 
-  return '<h2 class="text-xl font-bold mb-3">📋 Monthly Planner — '+mName(state.currentMonth)+'</h2>'+
-
-  // ── TOP: Live Balance Card ──
-  '<div style="background:linear-gradient(135deg,'+(available>=0?'#1e3a5f,#0f4c2a':'#7f1d1d,#431407')+';border-radius:14px;padding:18px;margin-bottom:14px">'+
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
-      '<div>'+
-        '<div style="font-size:11px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px">Available Balance</div>'+
-        '<div style="font-size:34px;font-weight:800;color:'+(available>=0?'#6ee7b7':'#fca5a5')+';line-height:1.1">AED '+fmt(available)+'</div>'+
-        '<div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px">Income: AED '+fmt(state.monthlyIncome)+' — EMIs: AED '+fmt(totalEmi)+' — Paid Utils: AED '+fmt(totalUtilPaid)+' — Expenses: AED '+fmt(totalExp)+'</div>'+
-      '</div>'+
-      '<button class="icon-btn" onclick="state.editingIncome=true;render()" style="color:rgba(255,255,255,.7);font-size:18px;background:rgba(255,255,255,.1);border:none;border-radius:8px;padding:6px 10px;cursor:pointer">✏️</button>'+
-    '</div>'+
-    (state.editingIncome?
-      '<div style="margin-top:12px;display:flex;gap:8px">'+
-        '<input type="number" id="income-input" style="flex:1;padding:8px 12px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:8px;color:white;font-size:15px" value="'+state.monthlyIncome+'" placeholder="Income">'+
-        '<button onclick="updateIncome()" style="background:#10b981;border:none;color:white;padding:8px 14px;border-radius:8px;font-weight:700;cursor:pointer">Save</button>'+
-        '<button onclick="state.editingIncome=false;render()" style="background:rgba(255,255,255,.15);border:none;color:white;padding:8px 12px;border-radius:8px;cursor:pointer">✕</button>'+
-      '</div>':'') +
-  '</div>'+
-
-  // ── SUMMARY STRIP ──
-  '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">'+
-    '<div style="background:#1e293b;border-radius:10px;padding:10px;text-align:center"><div style="font-size:16px;font-weight:700;color:#fbbf24">AED '+fmt(totalEmi)+'</div><div style="font-size:10px;color:#64748b;margin-top:2px">EMIs</div></div>'+
-    '<div style="background:#1e293b;border-radius:10px;padding:10px;text-align:center"><div style="font-size:16px;font-weight:700;color:#10b981">AED '+fmt(totalUtilPaid)+'</div><div style="font-size:10px;color:#64748b;margin-top:2px">Utils Paid</div></div>'+
-    '<div style="background:#1e293b;border-radius:10px;padding:10px;text-align:center"><div style="font-size:16px;font-weight:700;color:#f97316">AED '+fmt(totalUtilBilled-totalUtilPaid)+'</div><div style="font-size:10px;color:#64748b;margin-top:2px">Utils Pend.</div></div>'+
-    '<div style="background:#1e293b;border-radius:10px;padding:10px;text-align:center"><div style="font-size:16px;font-weight:700;color:#a78bfa">AED '+fmt(totalExp)+'</div><div style="font-size:10px;color:#64748b;margin-top:2px">Expenses</div></div>'+
-  '</div>'+
-
-  // ── EMI TABLE ──
-  '<div style="background:#1e293b;border-radius:12px;margin-bottom:12px;overflow:hidden">'+
-    '<div style="padding:10px 12px;background:#2563eb;font-weight:700;font-size:14px">📅 EMI Payments — Monthly</div>'+
-    hdr(['Name / Due','Monthly','Balance',''],['1fr','90px','100px','70px'])+
-    emiRows+
-    '<div style="padding:9px 12px;background:#0f172a;display:flex;justify-content:space-between;border-top:1px solid #334155">'+
-      '<span style="font-size:12px;font-weight:700;color:#94a3b8">Total Monthly EMI</span>'+
-      '<span style="font-weight:800;color:#fbbf24">AED '+fmt(totalEmi)+'</span>'+
-    '</div>'+
-  '</div>'+
-
-  // ── UTILITIES TABLE ──
-  '<div style="background:#1e293b;border-radius:12px;margin-bottom:12px;overflow:hidden">'+
-    '<div style="padding:10px 12px;background:#0d9488;font-weight:700;font-size:14px">🏠 Utilities & Rent — '+mName(state.currentMonth)+'</div>'+
-    hdr(['Name / Due','Amount','','Paid'],['1fr','90px','100px','70px'])+
-    utilRows+
-    '<div style="padding:9px 12px;background:#0f172a;display:flex;justify-content:space-between;border-top:1px solid #334155">'+
-      '<span style="font-size:12px;font-weight:700;color:#94a3b8">Paid / Total</span>'+
-      '<span style="font-weight:800;color:#10b981">AED '+fmt(totalUtilPaid)+' / AED '+fmt(totalUtilBilled)+'</span>'+
-    '</div>'+
-  '</div>'+
-
-  // ── EXPENSES TABLE ──
-  '<div style="background:#1e293b;border-radius:12px;margin-bottom:12px;overflow:hidden">'+
-    '<div style="padding:10px 12px;background:#9333ea;font-weight:700;font-size:14px">📊 Expenses — '+mName(state.currentMonth)+'</div>'+
-    hdr(['Category / Note','Amount','Date',''],['1fr','90px','100px','70px'])+
-    expRows+
-    addExpForm+
-    '<div style="padding:9px 12px;background:#0f172a;display:flex;justify-content:space-between;border-top:1px solid #334155">'+
-      '<span style="font-size:12px;font-weight:700;color:#94a3b8">Total Expenses</span>'+
-      '<span style="font-weight:800;color:#a78bfa">AED '+fmt(totalExp)+'</span>'+
-    '</div>'+
-  '</div>'+
-
-  // ── TOTAL DEBT SUMMARY ──
-  '<div style="background:#1e293b;border-radius:12px;margin-bottom:12px;overflow:hidden">'+
-    '<div style="padding:10px 12px;background:#ea580c;font-weight:700;font-size:14px">💳 Debt Summary (All Time)</div>'+
-    hdr(['Name','Bal. Amount','Months',''],['1fr','100px','70px','0'])+
-    state.emis.filter(e=>!e.paid).map(e=>row([
-      {w:'1fr',  v:'<span style="font-weight:600">'+e.name+'</span>'},
-      {w:'100px',v:'<span style="color:#f97316;font-weight:700">AED '+fmt(e.balanceAmount)+'</span>',style:'text-align:right'},
-      {w:'70px', v:'<span style="color:#94a3b8">'+e.balanceMonths+' mo</span>',style:'text-align:right'},
-      {w:'0',v:''},
-    ])).join('')+
-    '<div style="padding:9px 12px;background:#0f172a;display:flex;justify-content:space-between;border-top:1px solid #334155">'+
-      '<span style="font-size:12px;font-weight:700;color:#94a3b8">Total EMI Balance</span>'+
-      '<span style="font-weight:800;color:#f97316">AED '+fmt(state.emis.reduce((s,e)=>s+e.balanceAmount,0))+'</span>'+
-    '</div>'+
+// ─── EMIs TAB ─────────────────────────────────────────────────────────────────
+function renderEmis(){
+  const active=S.emis.filter(e=>!e.cleared);
+  const cleared=S.emis.filter(e=>e.cleared);
+  let html='<div class="card" style="background:linear-gradient(135deg,rgba(37,99,235,.2),rgba(124,58,237,.2));border:1px solid #2563eb;text-align:center;padding:18px;margin-bottom:12px">'+
+    '<div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Total EMI Balance Remaining</div>'+
+    '<div style="font-size:28px;font-weight:800;color:#f97316">AED '+fmt(S.emis.reduce((s,e)=>s+e.balAmt,0))+'</div>'+
+    '<div style="font-size:12px;color:#94a3b8;margin-top:4px">Monthly Total: AED '+fmt(active.reduce((s,e)=>s+e.emi,0))+'/mo</div>'+
   '</div>';
-}
 
-// ─── MONTHLY SUMMARY ──────────────────────────────────────────────────────────
-// Toggle EMI paid status for THIS month only
-function toggleEmiMonthlyPaid(id){
-  if(!state.emiMonthlyPaid[state.currentMonth]) state.emiMonthlyPaid[state.currentMonth]={};
-  const wasAlreadyPaid = !!state.emiMonthlyPaid[state.currentMonth][id];
-  if(wasAlreadyPaid){
-    // Undo — remove from monthly paid, undo loan counter
-    delete state.emiMonthlyPaid[state.currentMonth][id];
-    undoEmiPayment(id); // rolls back paidMonths counter
-  } else {
-    // Pay — record in monthly paid, advance loan counter
-    state.emiMonthlyPaid[state.currentMonth][id] = true;
-    markEmiPayment(id); // advances paidMonths counter
-  }
-  saveData(); render();
-}
-
-function renderMonthly(){
-  const bills   = state.utilityBills[state.currentMonth]||{};
-  const exps    = state.monthlyExpenses[state.currentMonth]||[];
-  const empaid  = state.emiMonthlyPaid[state.currentMonth]||{};
-  const today   = new Date().getDate();
-
-  // Build items — EMI paid status comes from emiMonthlyPaid[month]
-  const items=[];
-  state.emis.filter(e=>!e.paid).forEach(e=>{
-    items.push({
-      label:e.name,
-      sub:'EMI • Due '+ord(e.dueDate)+' • '+e.balanceMonths+' mo left',
-      amount:e.monthlyEmi,
-      paidThisMonth: !!empaid[e.id],  // ← key: only paid if tapped this month
-      type:'emi', id:e.id, icon:'📅', dueDate:e.dueDate
-    });
-  });
-  state.utilities.forEach(u=>{
-    const b=bills[u.id]||{};
-    const amt=b.amount||(u.fixedAmount||0);
-    items.push({label:u.name, sub:(u.type==='rent'?'Rent':'Utility')+' • Due '+ord(u.dueDate), amount:amt, paidThisMonth:b.paid||false, type:'util', uid:u.id, icon:u.icon, dueDate:u.dueDate, hasAmt:!!b.amount});
-  });
-  exps.forEach(exp=>{
-    items.push({label:exp.category, sub:(exp.description||'Expense')+' • '+new Date(exp.date).toLocaleDateString('en-GB',{day:'numeric',month:'short'}), amount:exp.amount, paidThisMonth:true, type:'exp', id:exp.id, icon:'📊', dueDate:0});
-  });
-
-  // Totals — only PAID items deduct
-  const totalPaidEmi  = items.filter(i=>i.type==='emi'&&i.paidThisMonth).reduce((s,i)=>s+i.amount,0);
-  const totalPaidUtil = items.filter(i=>i.type==='util'&&i.paidThisMonth).reduce((s,i)=>s+i.amount,0);
-  const totalPaidExp  = exps.reduce((s,e)=>s+e.amount,0);
-  const totalPaid     = totalPaidEmi + totalPaidUtil + totalPaidExp;
-  const finalBalance  = state.monthlyIncome - totalPaid;
-
-  // Pending (not yet paid)
-  const pendingEmi    = items.filter(i=>i.type==='emi'&&!i.paidThisMonth).reduce((s,i)=>s+i.amount,0);
-  const pendingUtil   = items.filter(i=>i.type==='util'&&!i.paidThisMonth&&i.amount>0).reduce((s,i)=>s+i.amount,0);
-  const totalPending  = pendingEmi + pendingUtil;
-
-  function dueBadge(d){
-    if(!d)return'';
-    const diff=d-today;
-    if(diff<0)return'<span style="background:#dc2626;color:white;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:5px;font-weight:700">OVERDUE</span>';
-    if(diff<=3)return'<span style="background:#f59e0b;color:#000;font-size:9px;padding:1px 6px;border-radius:8px;margin-left:5px;font-weight:700">DUE SOON</span>';
-    return'';
-  }
-
-  // Build waterfall rows with running balance
-  let runBal = state.monthlyIncome;
-  let rows   = '';
-  items.forEach(item=>{
-    // Only deduct if this item was actually paid
-    if(item.paidThisMonth && item.amount>0) runBal -= item.amount;
-    const balColor   = runBal>=0?'#10b981':'#ef4444';
-    const amtColor   = item.paidThisMonth ? '#10b981' : '#f59e0b';
-    const rowBg      = item.paidThisMonth ? 'rgba(16,185,129,.05)' : 'rgba(255,255,255,.01)';
-
-    // Action button
-    let btn='';
-    if(item.type==='emi'){
-      if(item.paidThisMonth){
-        btn='<button onclick="toggleEmiMonthlyPaid('+item.id+')" style="background:rgba(6,78,59,.5);border:1px solid #10b981;color:#10b981;padding:5px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">✅ Paid — Undo ↩️</button>';
-      } else {
-        btn='<button onclick="toggleEmiMonthlyPaid('+item.id+')" style="background:#2563eb;border:none;color:white;padding:5px 10px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Mark Paid ✓</button>';
-      }
-    } else if(item.type==='util'){
-      if(!item.hasAmt){
-        btn='<button onclick="state.activeTab=\'utilities\';render()" style="background:#334155;border:none;color:#94a3b8;padding:5px 10px;border-radius:7px;font-size:11px;cursor:pointer;white-space:nowrap">Enter Bill</button>';
-      } else if(item.paidThisMonth){
-        btn='<button onclick="toggleUtilPaid('+item.uid+')" style="background:rgba(6,78,59,.5);border:1px solid #10b981;color:#10b981;padding:5px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">✅ Paid — Undo ↩️</button>';
-      } else {
-        btn='<button onclick="toggleUtilPaid('+item.uid+')" style="background:#ca8a04;border:none;color:white;padding:5px 10px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Mark Paid ✓</button>';
-      }
-    } else {
-      btn='<button onclick="deleteExpense('+item.id+')" style="background:#450a0a;border:none;color:#fca5a5;padding:5px 10px;border-radius:7px;font-size:11px;cursor:pointer">🗑️</button>';
-    }
-
-    rows +=
-      '<div style="border-bottom:1px solid #1e293b;padding:12px 14px;background:'+rowBg+'">'+
-        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">'+
-          '<div style="font-size:20px;width:28px;text-align:center">'+item.icon+'</div>'+
-          '<div style="flex:1">'+
-            '<div style="font-size:14px;font-weight:700">'+item.label+(item.type==='emi'?dueBadge(item.dueDate):'')+'</div>'+
-            '<div style="font-size:11px;color:#64748b;margin-top:1px">'+item.sub+'</div>'+
+  active.forEach(e=>{
+    const pct=e.tenure>0?(e.paid/e.tenure)*100:0;
+    const paid=getEmiPaid(e.id);
+    html+=
+      '<div class="card">'+
+        '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px">'+
+          '<div>'+
+            '<div style="font-size:15px;font-weight:700">'+e.name+'</div>'+
+            '<div style="font-size:11px;color:#64748b">Due '+ord(e.due)+' every month</div>'+
+            '<div style="font-size:11px;color:#64748b">'+e.start+' → '+e.end+'</div>'+
           '</div>'+
-          '<div style="text-align:right">'+
-            '<div style="font-size:15px;font-weight:800;color:'+amtColor+'">'+(item.amount>0?(item.paidThisMonth?'— ':'  ')+'AED '+fmt(item.amount):'—')+'</div>'+
-            '<div style="font-size:10px;color:'+(item.paidThisMonth?'#10b981':'#94a3b8')+'">'+
-              (item.paidThisMonth?'✅ deducted':'⏳ not paid')+
-            '</div>'+
-          '</div>'+
+          (paid?'<span class="badge b-green">✅ PAID THIS MONTH</span>':'<span class="badge b-yellow">UNPAID</span>')+
         '</div>'+
-        '<div style="display:flex;align-items:center;justify-content:space-between;padding-top:7px;border-top:1px solid #1e293b">'+
-          btn+
-          '<div style="text-align:right">'+
-            '<div style="font-size:10px;color:#64748b">Balance after</div>'+
-            '<div style="font-size:15px;font-weight:800;color:'+balColor+'">AED '+fmt(runBal)+'</div>'+
-          '</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'+
+          '<div style="background:#0f172a;border-radius:8px;padding:10px;text-align:center"><div style="font-size:11px;color:#64748b;margin-bottom:2px">Monthly</div><div style="font-size:16px;font-weight:700;color:#fbbf24">AED '+fmt(e.emi)+'</div></div>'+
+          '<div style="background:#0f172a;border-radius:8px;padding:10px;text-align:center"><div style="font-size:11px;color:#64748b;margin-bottom:2px">Balance</div><div style="font-size:16px;font-weight:700;color:#f97316">AED '+fmt(e.balAmt)+'</div></div>'+
+          '<div style="background:#0f172a;border-radius:8px;padding:10px;text-align:center"><div style="font-size:11px;color:#64748b;margin-bottom:2px">Months Left</div><div style="font-size:16px;font-weight:700;color:#a78bfa">'+e.balMon+'</div></div>'+
+          '<div style="background:#0f172a;border-radius:8px;padding:10px;text-align:center"><div style="font-size:11px;color:#64748b;margin-bottom:2px">Progress</div><div style="font-size:16px;font-weight:700;color:#60a5fa">'+e.paid+'/'+e.tenure+'</div></div>'+
+        '</div>'+
+        '<div class="progress"><div class="progress-fill" style="width:'+pct+'%"></div></div>'+
+        '<div style="margin-top:10px;display:flex;gap:8px">'+
+          (paid?
+            '<button onclick="toggleEmi('+e.id+')" class="btn btn-gray" style="flex:1">↩️ Undo Payment</button>':
+            '<button onclick="toggleEmi('+e.id+')" class="btn btn-green" style="flex:1">✅ Mark Paid This Month</button>')+
         '</div>'+
       '</div>';
   });
 
-  // Quick add expense
-  const cats=['Family Support','Food & Groceries','Transportation','Entertainment','Healthcare','Clothing','Personal Care','Other'];
-  const addForm=
-    '<div style="background:#1e293b;border-radius:12px;padding:14px;margin-bottom:14px">'+
-      '<div style="font-size:13px;font-weight:700;margin-bottom:10px;color:#94a3b8">➕ Add Expense</div>'+
+  if(cleared.length){
+    html+='<div class="divider">✅ Cleared EMIs</div>';
+    cleared.forEach(e=>{
+      html+=
+        '<div class="card" style="opacity:.55;border:1px solid rgba(16,185,129,.3)">'+
+          '<div style="display:flex;justify-content:space-between"><div><div style="font-size:14px;font-weight:700">'+e.name+'</div><div style="font-size:11px;color:#64748b">Fully Paid ✅</div></div><span class="badge b-green">CLEARED</span></div>'+
+          '<div style="font-size:12px;color:#10b981;margin-top:8px">Total Paid: AED '+fmt(e.paidAmt)+'</div>'+
+        '</div>';
+    });
+  }
+  return html;
+}
+
+// ─── DEBTS TAB ────────────────────────────────────────────────────────────────
+function renderDebts(){
+  const c=calc();
+  const active=S.debts.filter(d=>d.bal>0).sort((a,b)=>b.bal-a.bal);
+  const cleared=S.debts.filter(d=>d.bal===0);
+  let html=
+    '<div class="card" style="background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(236,72,153,.2));border:1px solid #7c3aed;text-align:center;padding:18px;margin-bottom:12px">'+
+      '<div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Total Personal Debt</div>'+
+      '<div style="font-size:28px;font-weight:800;color:#a78bfa">AED '+fmt(c.totalDebt)+'</div>'+
+    '</div>';
+
+  // Add new debt
+  html+=
+    '<div class="card" style="margin-bottom:12px">'+
+      '<div class="card-hdr">➕ Add / Record Debt</div>'+
       '<div style="display:flex;flex-direction:column;gap:8px">'+
-        '<select id="mo-exp-cat" style="padding:9px 10px;background:#334155;border:1px solid #475569;border-radius:8px;color:white;font-size:13px">'+cats.map(c=>'<option>'+c+'</option>').join('')+'</select>'+
+        '<input type="text" id="d-name" class="inp" placeholder="Person name">'+
         '<div style="display:flex;gap:8px">'+
-          '<input type="number" id="mo-exp-amt" placeholder="Amount (AED)" style="flex:1;padding:9px 10px;background:#334155;border:1px solid #475569;border-radius:8px;color:white;font-size:13px;outline:none">'+
-          '<input type="text" id="mo-exp-desc" placeholder="Note" style="flex:1;padding:9px 10px;background:#334155;border:1px solid #475569;border-radius:8px;color:white;font-size:13px;outline:none">'+
+          '<input type="number" id="d-amt" class="inp" placeholder="Amount (AED)" style="flex:1">'+
+          '<button class="btn btn-purple" onclick="addDebt()">Add</button>'+
         '</div>'+
-        '<button onclick="(function(){var c=document.getElementById(\'mo-exp-cat\').value;var a=parseFloat(document.getElementById(\'mo-exp-amt\').value);var d=document.getElementById(\'mo-exp-desc\').value;if(!(a>0))return;if(!state.monthlyExpenses[state.currentMonth])state.monthlyExpenses[state.currentMonth]=[];state.monthlyExpenses[state.currentMonth].push({id:Date.now(),date:new Date().toISOString(),category:c,amount:a,description:d});saveData();toast(\'✅ Added!\');render();})()" style="background:#9333ea;border:none;color:white;padding:10px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">Add Expense</button>'+
       '</div>'+
     '</div>';
 
+  active.forEach(d=>{
+    const pct=d.total>0?(d.paidAmt/d.total)*100:0;
+    html+=
+      '<div class="card">'+
+        '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px">'+
+          '<div><div style="font-size:15px;font-weight:700">'+d.person+'</div><div style="font-size:11px;color:#64748b">Original: AED '+fmt(d.total)+'</div></div>'+
+          '<div style="text-align:right"><div style="font-size:17px;font-weight:800;color:#f97316">AED '+fmt(d.bal)+'</div><div style="font-size:10px;color:#64748b">remaining</div></div>'+
+        '</div>'+
+        '<div class="progress" style="margin-bottom:10px"><div class="progress-fill" style="width:'+pct+'%;background:linear-gradient(90deg,#f97316,#10b981)"></div></div>'+
+        '<div style="font-size:12px;color:#10b981;margin-bottom:10px">Paid: AED '+fmt(d.paidAmt)+'</div>'+
+        '<div style="display:flex;gap:8px">'+
+          '<input type="number" id="dp-'+d.id+'" class="inp" placeholder="Pay amount" style="flex:1">'+
+          '<button class="btn btn-green" onclick="payDebt('+d.id+')">Pay</button>'+
+        '</div>'+
+      '</div>';
+  });
+
+  if(cleared.length){
+    html+='<div class="divider">✅ Cleared Debts</div>';
+    cleared.forEach(d=>{
+      html+=
+        '<div class="card" style="opacity:.55;border:1px solid rgba(16,185,129,.3)">'+
+          '<div style="display:flex;justify-content:space-between"><div style="font-size:14px;font-weight:700">'+d.person+'</div><span class="badge b-green">CLEARED ✅</span></div>'+
+          '<div style="font-size:12px;color:#10b981;margin-top:6px">Total Paid: AED '+fmt(d.paidAmt)+'</div>'+
+        '</div>';
+    });
+  }
+  return html;
+}
+
+function addDebt(){
+  const person=document.getElementById('d-name').value.trim();
+  const amt=parseFloat(document.getElementById('d-amt').value);
+  if(!person||!(amt>0)){toast('Fill name & amount','err');return;}
+  const exists=S.debts.find(d=>d.person.toLowerCase()===person.toLowerCase());
+  if(exists){exists.total+=amt;exists.bal+=amt;}
+  else S.debts.push({id:Date.now(),person,total:amt,paidAmt:0,bal:amt});
+  save();toast('✅ Added');render();
+}
+
+function payDebt(id){
+  const d=S.debts.find(x=>x.id===id);
+  const amt=parseFloat(document.getElementById('dp-'+id).value);
+  if(!d||!(amt>0))return;
+  d.paidAmt+=amt;d.bal=Math.max(0,d.bal-amt);
+  save();toast('✅ AED '+fmt(amt)+' paid to '+d.person);render();
+}
+
+// ─── UTILS TAB ────────────────────────────────────────────────────────────────
+function renderUtils(){
+  const c=calc();
+  let html=
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">'+
+      '<div class="card" style="text-align:center;padding:12px"><div style="font-size:15px;font-weight:700;color:#fbbf24">AED '+fmt(Object.values(S.utilBills[S.month]||{}).reduce((s,b)=>s+(b.amt||0),0))+'</div><div style="font-size:10px;color:#64748b;margin-top:2px">Billed</div></div>'+
+      '<div class="card" style="text-align:center;padding:12px"><div style="font-size:15px;font-weight:700;color:#10b981">AED '+fmt(c.utilPaidAmt)+'</div><div style="font-size:10px;color:#64748b;margin-top:2px">Paid</div></div>'+
+      '<div class="card" style="text-align:center;padding:12px"><div style="font-size:15px;font-weight:700;color:#f97316">AED '+fmt(c.utilPending)+'</div><div style="font-size:10px;color:#64748b;margin-top:2px">Pending</div></div>'+
+    '</div>';
+
+  S.utilities.forEach(u=>{
+    const b=getUtil(u.id);
+    const today=new Date().getDate();
+    const diff=u.due-today;
+    const isPaid=b.paid&&b.amt>0;
+    const badge=isPaid?'<span class="badge b-green">PAID ✅</span>':(diff<0&&b.amt>0?'<span class="badge b-red">OVERDUE</span>':diff<=3?'<span class="badge b-yellow">DUE SOON</span>':'<span class="badge b-blue">DUE '+ord(u.due)+'</span>');
+    html+=
+      '<div class="card '+(isPaid?'':'')+'">'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'+
+          '<div style="display:flex;align-items:center;gap:10px">'+
+            '<div style="font-size:26px">'+u.icon+'</div>'+
+            '<div><div style="font-size:14px;font-weight:700">'+u.name+'</div><div style="font-size:11px;color:#64748b">Due '+ord(u.due)+(u.fixed>0?' • Default AED '+fmt(u.fixed):'')+'</div></div>'+
+          '</div>'+badge+
+        '</div>'+
+        '<div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">'+
+          '<input type="number" id="u-'+u.id+'" class="inp" value="'+(b.amt||u.fixed||'')+'" placeholder="Bill amount (AED)" style="flex:1" oninput="setUtil('+u.id+',{amt:parseFloat(this.value)||0})">'+
+          '<button onclick="setUtil('+u.id+',{amt:parseFloat(document.getElementById(\'u-'+u.id+'\').value)||0});save();render()" class="btn btn-yellow" style="padding:9px 12px">Save</button>'+
+        '</div>'+
+        (b.amt>0?
+          '<button onclick="setUtil('+u.id+',{paid:'+(!isPaid)+'});save();render()" class="btn '+(isPaid?'btn-gray':'btn-green')+'" style="width:100%">'+
+            (isPaid?'↩️ Mark as Unpaid (adds back AED '+fmt(b.amt)+')':'✅ Mark as Paid (deducts AED '+fmt(b.amt)+')')+
+          '</button>':
+          '<p style="font-size:12px;color:#64748b">Enter bill amount and save to mark paid</p>'
+        )+
+      '</div>';
+  });
+
+  // Add utility
+  html+=
+    '<div class="card">'+
+      '<div class="card-hdr">➕ Add Utility</div>'+
+      '<div style="display:flex;flex-direction:column;gap:8px">'+
+        '<input type="text" id="u-name" class="inp" placeholder="Name (e.g. Gym)">'+
+        '<div style="display:flex;gap:8px">'+
+          '<input type="text" id="u-icon" class="inp" placeholder="Icon emoji" style="width:70px;flex:none">'+
+          '<input type="number" id="u-due" class="inp" placeholder="Due day" style="flex:1">'+
+          '<input type="number" id="u-fixed" class="inp" placeholder="Default AED" style="flex:1">'+
+        '</div>'+
+        '<button class="btn btn-blue" onclick="addUtil()">Add</button>'+
+      '</div>'+
+    '</div>';
+  return html;
+}
+
+function addUtil(){
+  const name=document.getElementById('u-name').value.trim();
+  const icon=document.getElementById('u-icon').value.trim()||'💡';
+  const due=parseInt(document.getElementById('u-due').value)||1;
+  const fixed=parseFloat(document.getElementById('u-fixed').value)||0;
+  if(!name)return;
+  S.utilities.push({id:Date.now(),name,icon,due,fixed});
+  save();toast('✅ Added');render();
+}
+
+// ─── OVERVIEW TAB ─────────────────────────────────────────────────────────────
+function renderOverview(){
+  const c=calc();
+  const totalEmiMon=S.emis.filter(e=>!e.cleared).reduce((s,e)=>s+e.emi,0);
+  const utilBilled=Object.values(S.utilBills[S.month]||{}).reduce((s,b)=>s+(b.amt||0),0);
   return (
-    '<h2 style="font-size:18px;font-weight:800;margin-bottom:12px">📆 Monthly — '+mName(state.currentMonth)+'</h2>'+
-
-    // Income card
-    '<div style="background:linear-gradient(135deg,#1e3a5f,#1e1b4b);border-radius:14px;padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">'+
-      '<div>'+
-        '<div style="font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px">Monthly Income</div>'+
-        '<div style="font-size:32px;font-weight:800;color:#6ee7b7">AED '+fmt(state.monthlyIncome)+'</div>'+
-      '</div>'+
-      '<button onclick="state.editingIncome=true;render()" style="background:rgba(255,255,255,.1);border:none;color:white;padding:8px 12px;border-radius:9px;font-size:16px;cursor:pointer">✏️</button>'+
-    '</div>'+
-    (state.editingIncome?
-      '<div style="background:#1e293b;border-radius:10px;padding:12px;margin-bottom:12px;display:flex;gap:8px">'+
-        '<input type="number" id="income-input" value="'+state.monthlyIncome+'" style="flex:1;padding:9px 12px;background:#334155;border:1px solid #475569;border-radius:8px;color:white;font-size:15px;outline:none">'+
-        '<button onclick="updateIncome()" style="background:#10b981;border:none;color:white;padding:9px 14px;border-radius:8px;font-weight:700;cursor:pointer">Save</button>'+
-        '<button onclick="state.editingIncome=false;render()" style="background:#475569;border:none;color:white;padding:9px 12px;border-radius:8px;cursor:pointer">✕</button>'+
-      '</div>':'')+
-
-    // Live balance status
-    '<div style="background:'+(finalBalance>=0?'rgba(16,185,129,.12)':'rgba(220,38,38,.12)')+';border:2px solid '+(finalBalance>=0?'#10b981':'#ef4444')+';border-radius:14px;padding:16px;margin-bottom:14px">'+
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
-        '<div style="text-align:center">'+
-          '<div style="font-size:10px;color:#94a3b8;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Paid Out</div>'+
-          '<div style="font-size:22px;font-weight:800;color:#ef4444">AED '+fmt(totalPaid)+'</div>'+
-        '</div>'+
-        '<div style="text-align:center">'+
-          '<div style="font-size:10px;color:#94a3b8;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">'+(finalBalance>=0?'In Hand':'Overspent')+'</div>'+
-          '<div style="font-size:22px;font-weight:800;color:'+(finalBalance>=0?'#10b981':'#ef4444')+'">AED '+fmt(Math.abs(finalBalance))+'</div>'+
-        '</div>'+
-      '</div>'+
-      (totalPending>0?
-        '<div style="margin-top:12px;padding-top:10px;border-top:1px solid #334155">'+
-          '<div style="display:flex;justify-content:space-between;align-items:center">'+
-            '<span style="font-size:12px;color:#f59e0b">⏳ Still to pay this month</span>'+
-            '<span style="font-size:14px;font-weight:700;color:#f59e0b">AED '+fmt(totalPending)+'</span>'+
-          '</div>'+
-          '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">'+
-            '<span style="font-size:11px;color:#64748b">After all paid, left in hand</span>'+
-            '<span style="font-size:13px;font-weight:700;color:'+(finalBalance-totalPending>=0?'#10b981':'#ef4444')+'">AED '+fmt(finalBalance-totalPending)+'</span>'+
-          '</div>'+
-        '</div>':'') +
-    '</div>'+
-
-    // Waterfall list
-    '<div style="background:#1e293b;border-radius:14px;overflow:hidden;margin-bottom:14px">'+
-      '<div style="padding:11px 14px;background:linear-gradient(90deg,#1e3a5f,#1e1b4b);display:flex;justify-content:space-between;align-items:center">'+
-        '<span style="font-weight:700;font-size:14px">💸 Payment Waterfall</span>'+
-        '<span style="font-size:11px;color:rgba(255,255,255,.45)">Tap "Mark Paid ✓" to deduct</span>'+
-      '</div>'+
-      // Starting balance row
-      '<div style="background:rgba(16,185,129,.08);padding:11px 14px;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center">'+
-        '<span style="font-size:13px;font-weight:700;color:#6ee7b7">🟢 Income this month</span>'+
-        '<span style="font-size:17px;font-weight:800;color:#6ee7b7">AED '+fmt(state.monthlyIncome)+'</span>'+
-      '</div>'+
-      (items.length===0?'<div style="padding:24px;text-align:center;color:#64748b">No items yet</div>':rows)+
-      // Final row
-      '<div style="padding:14px;background:'+(finalBalance>=0?'rgba(16,185,129,.12)':'rgba(220,38,38,.12)')+';display:flex;justify-content:space-between;align-items:center;border-top:2px solid '+(finalBalance>=0?'#10b981':'#ef4444')+'">'+
-        '<div>'+
-          '<div style="font-size:14px;font-weight:700;color:'+(finalBalance>=0?'#10b981':'#ef4444')+'">'+(finalBalance>=0?'✅ Balance in Hand':'⚠️ Overspent')+'</div>'+
-          '<div style="font-size:11px;color:#64748b">Based on what you have marked paid</div>'+
-        '</div>'+
-        '<div style="font-size:24px;font-weight:800;color:'+(finalBalance>=0?'#10b981':'#ef4444')+'">AED '+fmt(finalBalance)+'</div>'+
+    '<div class="card" style="background:linear-gradient(135deg,#1e3a5f,#312e81);padding:18px;margin-bottom:12px">'+
+      '<div style="font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Income vs Commitments</div>'+
+      '<div style="font-size:34px;font-weight:800;color:#6ee7b7;margin-bottom:8px">AED '+fmt(S.income)+'/mo</div>'+
+      '<div style="background:rgba(255,255,255,.07);border-radius:10px;padding:12px">'+
+        '<div class="row" style="border-color:rgba(255,255,255,.06)"><span class="lbl">EMIs (monthly)</span><span class="val g-red">— AED '+fmt(totalEmiMon)+'</span></div>'+
+        '<div class="row" style="border-color:rgba(255,255,255,.06)"><span class="lbl">Utils Paid ('+monLabel(S.month)+')</span><span class="val g-yellow">— AED '+fmt(c.utilPaidAmt)+'</span></div>'+
+        '<div class="row" style="border-color:rgba(255,255,255,.06)"><span class="lbl">Utils Pending</span><span class="val" style="color:#94a3b8">AED '+fmt(c.utilPending)+'</span></div>'+
+        '<div class="row" style="border-color:rgba(255,255,255,.06)"><span class="lbl">Expenses</span><span class="val g-purple">— AED '+fmt(c.expAmt)+'</span></div>'+
+        '<div class="row" style="border-color:rgba(255,255,255,.06);padding-top:12px;margin-top:4px"><span style="font-weight:700;font-size:15px">In Hand</span><span style="font-size:22px;font-weight:800;color:'+(c.balance>=0?'#10b981':'#ef4444')+'">AED '+fmt(c.balance)+'</span></div>'+
       '</div>'+
     '</div>'+
-    addForm
+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">'+
+      '<div class="card" style="text-align:center;padding:14px"><div style="font-size:22px;font-weight:800;color:#f97316">AED '+fmt(c.totalEmiBal+c.totalDebt)+'</div><div style="font-size:11px;color:#64748b;margin-top:2px">Total All Debts</div></div>'+
+      '<div class="card" style="text-align:center;padding:14px"><div style="font-size:22px;font-weight:800;color:#a78bfa">AED '+fmt(c.totalDebt)+'</div><div style="font-size:11px;color:#64748b;margin-top:2px">Personal Debts</div></div>'+
+      '<div class="card" style="text-align:center;padding:14px"><div style="font-size:22px;font-weight:800;color:#ef4444">AED '+fmt(c.totalEmiBal)+'</div><div style="font-size:11px;color:#64748b;margin-top:2px">EMI Balance</div></div>'+
+      '<div class="card" style="text-align:center;padding:14px"><div style="font-size:22px;font-weight:800;color:#fbbf24">AED '+fmt(totalEmiMon)+'</div><div style="font-size:11px;color:#64748b;margin-top:2px">Monthly EMI</div></div>'+
+    '</div>'+
+
+    '<div class="card" style="margin-bottom:12px">'+
+      '<div class="card-hdr">💾 Backup & Restore</div>'+
+      '<div style="display:flex;gap:8px">'+
+        '<button class="btn btn-blue" style="flex:1" onclick="exportData()">📥 Export</button>'+
+        '<label class="btn btn-gray" style="flex:1;text-align:center;cursor:pointer">📤 Import<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>'+
+      '</div>'+
+    '</div>'
   );
 }
 
-// ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
-function renderNotifications(){
-  const supported='Notification' in window;
-  const granted=supported&&Notification.permission==='granted';
-  const allItems=[...state.emis.filter(e=>!e.paid),...state.utilities,...(state.fixedExpenses||[])];
-  return '<h2 class="text-xl font-bold mb-4">🔔 Reminders & Notifications</h2>'+
-    '<div class="card mb-4" style="border:1px solid #2563eb"><h3 class="mb-3">📱 Browser Notifications</h3>'+
-      (!supported?'<p class="text-sm text-red">❌ Not supported.</p>':
-       granted?
-        '<div style="background:rgba(16,185,129,.15);border:1px solid #10b981;border-radius:8px;padding:12px;margin-bottom:12px"><p class="text-green font-bold">✅ Enabled!</p></div>':
-        '<button class="btn btn-primary" style="width:100%" onclick="requestNotif()">🔔 Enable Notifications</button>')+
-    '</div>'+
-    '<div class="card"><h3 class="font-bold mb-3">📋 Due Dates Reference</h3>'+
-      allItems.map(item=>'<div class="stat-row" style="padding:8px 0;border-bottom:1px solid #334155"><span class="text-sm">'+(item.name||item.person)+'</span><span class="badge badge-info">'+ord(item.dueDate)+' of month</span></div>').join('')+
-    '</div>';
+function exportData(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='finance-backup-'+S.month+'.json';a.click();
+  toast('📥 Exported!');
+}
+function importData(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const p=JSON.parse(ev.target.result);
+      S=Object.assign({},S,p,{tab:'monthly',month:todayMon(),editIncome:false});
+      if(!S.emiPaid)S.emiPaid={};if(!S.utilBills)S.utilBills={};if(!S.expenses)S.expenses={};
+      save();toast('📤 Imported!');render();
+    }catch{toast('❌ Invalid file','err');}
+  };r.readAsText(f);
 }
 
-async function requestNotif(){
-  if(!('Notification' in window)){toast('❌ Not supported','error');return;}
-  const p=await Notification.requestPermission();
-  if(p==='granted'){state.notificationsEnabled=true;saveData();toast('🔔 Enabled!');}
-  else toast('❌ Permission denied','error');
-  render();
-}
+// ─── NAV & RENDER ─────────────────────────────────────────────────────────────
+const TABS=[
+  {id:'monthly', icon:'📆', label:'Monthly'},
+  {id:'emis',    icon:'📅', label:'EMIs'},
+  {id:'debts',   icon:'📉', label:'Debts'},
+  {id:'utils',   icon:'🏠', label:'Utils'},
+  {id:'overview',icon:'💵', label:'Overview'},
+];
 
-// ─── NAV ──────────────────────────────────────────────────────────────────────
-function renderNav(){
-  return[
-    {id:'overview', icon:'💵',label:'Overview'},
-    {id:'monthly',  icon:'📆',label:'Monthly'},
-    {id:'planner',  icon:'📋',label:'Planner'},
-    {id:'pending',  icon:'⏰',label:'Pending'},
-    {id:'emis',     icon:'📅',label:'EMIs'},
-    {id:'personal', icon:'📉',label:'Debts'},
-    {id:'lent',     icon:'🤝',label:'Lent'},
-    {id:'utilities',icon:'🏠',label:'Utils'},
-    {id:'expenses', icon:'📊',label:'Expenses'},
-    {id:'notifications',icon:'🔔',label:'Alerts'},
-  ].map(t=>'<button class="nav-btn '+(state.activeTab===t.id?'active':'')+'" onclick="state.activeTab=\''+t.id+'\';render()"><span style="font-size:20px">'+t.icon+'</span><span>'+t.label+'</span></button>').join('');
-}
-
-// ─── MAIN RENDER ──────────────────────────────────────────────────────────────
 function render(){
+  document.getElementById('monName').textContent=monLabel(S.month);
   const app=document.getElementById('app');
-  const ms=document.getElementById('monthSelector');
-  ms.innerHTML=renderMonthSel();
-  switch(state.activeTab){
-    case 'overview':      app.innerHTML=renderOverview();      break;
-    case 'monthly':       app.innerHTML=renderMonthly();       break;
-    case 'planner':       app.innerHTML=renderPlanner();       break;
-    case 'pending':       app.innerHTML=renderPending();       break;
-    case 'emis':          app.innerHTML=renderEmis();          break;
-    case 'personal':      app.innerHTML=renderPersonalDebts(); break;
-    case 'lent':          app.innerHTML=renderMoneyLent();     break;
-    case 'utilities':     app.innerHTML=renderUtilities();     break;
-    case 'expenses':      app.innerHTML=renderExpenses();      break;
-    case 'notifications': app.innerHTML=renderNotifications(); break;
-    default:              app.innerHTML=renderOverview();
+  switch(S.tab){
+    case 'monthly':  app.innerHTML=renderMonthly();  break;
+    case 'emis':     app.innerHTML=renderEmis();     break;
+    case 'debts':    app.innerHTML=renderDebts();    break;
+    case 'utils':    app.innerHTML=renderUtils();    break;
+    case 'overview': app.innerHTML=renderOverview(); break;
+    default:         app.innerHTML=renderMonthly();
   }
-  document.getElementById('bottomNav').innerHTML=renderNav();
-  updateLastSaved();
+  document.getElementById('nav').innerHTML=TABS.map(t=>
+    '<button class="nb '+(S.tab===t.id?'on':'')+'" onclick="S.tab=\''+t.id+'\';render()">'+
+      '<span class="ni">'+t.icon+'</span><span class="nl">'+t.label+'</span>'+
+    '</button>'
+  ).join('');
+  updSaved();
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-loadData();
-render();
-setInterval(saveData, 30000);
+load();render();
+setInterval(()=>{save();},30000);
 </script>
-
 </body>
 </html>
